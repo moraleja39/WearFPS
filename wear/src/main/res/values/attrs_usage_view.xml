@@ -1,0 +1,15 @@
+<resources>
+    <declare-styleable name="UsageView">
+        <!--<attr name="exampleString" format="string" />
+        <attr name="exampleDimension" format="dimension" />
+        <attr name="exampleColor" format="color" />
+        <attr name="exampleDrawable" format="color|reference" />-->
+        <attr name="barColor" format="color" />
+        <attr name="percent" format="float" />
+        <attr name="dir" format="enum">
+            <enum name="left" value="1" />
+            <enum name="right" value="0" />
+        </attr>
+        <attr name="thick" format="float" />
+    </declare-styleable>
+</resources>

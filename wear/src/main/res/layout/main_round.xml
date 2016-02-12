@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:weightSum="1">
+
+    <me.oviedo.wearfps.UsageView
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:percent="0"
+        app:dir="left"
+        app:thick="50"
+        app:barColor="@android:color/holo_orange_dark"
+        android:layout_gravity="center_vertical"
+        android:id="@+id/lUsage"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <me.oviedo.wearfps.UsageView
+        android:layout_width="120dp"
+        android:layout_height="match_parent"
+        android:id="@+id/rUsage"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        app:dir="right"
+        app:percent="0"
+        app:thick="50"
+        app:barColor="@android:color/holo_blue_dark"
+        android:layout_gravity="center_vertical"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:text="100%"
+        android:id="@+id/lPercentText"
+        android:textColor="@android:color/white"
+        android:textSize="12dp"
+        android:textAlignment="center"
+        android:layout_marginBottom="39dp"
+        android:layout_marginLeft="30dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true" />
+
+    <TextView
+        android:layout_width="30dp"
+        android:layout_height="wrap_content"
+        android:text="100%"
+        android:id="@+id/rPercentText"
+        android:textColor="@android:color/primary_text_dark"
+        android:textSize="12dp"
+        android:textAlignment="center"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="39dp" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:visibility="visible"
+        android:id="@+id/relativeLayout">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CPU"
+            android:id="@+id/textView2"
+            android:textColor="@android:color/primary_text_dark"
+            android:layout_below="@+id/fpsText"
+            android:layout_toStartOf="@+id/fpsText"
+            android:layout_marginTop="44dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="GPU"
+            android:id="@+id/textView3"
+            android:textColor="@android:color/primary_text_dark"
+            android:layout_above="@+id/cpuTempText"
+            android:layout_toEndOf="@+id/fpsText" />
+
+        <TextView
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:text="30ºC"
+            android:id="@+id/cpuTempText"
+            android:textAlignment="center"
+            android:layout_below="@+id/textView2"
+            android:layout_alignEnd="@+id/textView2"
+            android:layout_marginRight="-10dp"
+            android:textColor="@android:color/primary_text_dark" />
+
+        <TextView
+            android:layout_width="45dp"
+            android:layout_height="wrap_content"
+            android:text="40ºC"
+            android:id="@+id/gpuTempText"
+            android:layout_alignBaseline="@+id/cpuTempText"
+            android:layout_alignBottom="@+id/cpuTempText"
+            android:layout_alignStart="@+id/textView3"
+            android:layout_marginLeft="-10dp"
+            android:textAlignment="center"
+            android:textColor="@android:color/primary_text_dark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:text="FPS"
+            android:id="@+id/textView4"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="41dp"
+            android:textSize="10dp"
+            android:textColor="@android:color/primary_text_dark" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:text="144"
+            android:id="@+id/fpsText"
+            android:layout_below="@+id/textView4"
+            android:layout_centerHorizontal="true"
+            android:textColor="@android:color/primary_text_dark" />
+
+    </RelativeLayout>
+
+
+</RelativeLayout>
