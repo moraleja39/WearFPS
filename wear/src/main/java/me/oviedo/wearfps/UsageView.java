@@ -125,6 +125,8 @@ public class UsageView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
+        mBarPath.rewind();
+
         mBarPath.arcTo(extRect, startAngle, sweepAngle);
         mBarPath.arcTo(intRect, startAngle + sweepAngle, -sweepAngle);
         //mBarPath.close();
