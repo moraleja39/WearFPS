@@ -4,10 +4,12 @@
     android:layout_height="match_parent">
 
     <me.oviedo.wearfps.UsageView
-        android:layout_width="100dp"
+        android:layout_width="120dp"
         android:layout_height="match_parent"
         android:paddingBottom="0dp"
         android:paddingLeft="0dp"
-        app:barColor="@color/green" />
+        app:barColor="@color/green"
+        app:percent="60"
+        android:layout_gravity="center" />
 
 </FrameLayout>
