@@ -1,9 +1,6 @@
 package me.oviedo.wearfps;
 
 import android.animation.Animator;
-import android.animation.ValueAnimator;
-import android.app.Activity;
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
