@@ -76,8 +76,8 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
         notificationIntent.setAction(FINISH_SELF_INTENT);
         PendingIntent pendingIntent = PendingIntent.getService(this, 0, notificationIntent, 0);
 
-        Notification notification = new NotificationCompat.Builder(this).setContentTitle("WearFPS").setTicker("WearFPS")
-                .setContentText("Conectado").setSmallIcon(R.drawable.ic_media_play)
+        Notification notification = new Notification.Builder(this).setContentTitle("WearFPS").setTicker("WearFPS")
+                .setContentText("Conectado").setSmallIcon(R.drawable.ic_wear_syncing)
                 .setContentIntent(pendingIntent).build();
 
         /*Intent notificationIntent = new Intent(this, ExampleActivity.class);
