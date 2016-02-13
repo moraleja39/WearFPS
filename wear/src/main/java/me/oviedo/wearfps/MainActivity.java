@@ -41,6 +41,8 @@ public class MainActivity extends WearableActivity {
     private PowerManager.WakeLock wakeLock;
     public static final String WAKELOCK_TAG = "me.oviedo.wearfps.wakelock";
 
+    private OrientationEventListener orientationEventListener;
+
     private static Timer timeoutTimer;
 
     @Override
@@ -62,6 +64,8 @@ public class MainActivity extends WearableActivity {
         //mTextView = (TextView) findViewById(R.id.text);
         //mClockView = (TextView) findViewById(R.id.clock);
 
+        setOrientationListener();
+
 
         mContainerView.setOnLayoutInflatedListener(new WatchViewStub.OnLayoutInflatedListener() {
             @Override
@@ -80,7 +84,7 @@ public class MainActivity extends WearableActivity {
 
                 //fpsText.setText("0");
 
-                setOrientationListener();
+                orientationEventListener.enable();
 
                 timeoutTimer = new Timer();
                 timeoutTimer.schedule(new TimerTask() {
@@ -281,7 +285,7 @@ public class MainActivity extends WearableActivity {
     }
 
     private void setOrientationListener() {
-        OrientationEventListener orientationEventListener = new OrientationEventListener(getApplicationContext()) {
+        orientationEventListener = new OrientationEventListener(getApplicationContext()) {
             @Override
             public void onOrientationChanged(int orientation) {
                 //fpsText.setText("" + orientation);
@@ -296,7 +300,6 @@ public class MainActivity extends WearableActivity {
                 }
             }
         };
-        orientationEventListener.enable();
     }
 
     @Override
@@ -315,8 +318,9 @@ public class MainActivity extends WearableActivity {
     protected void onStop() {
         super.onStop();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+        orientationEventListener.disable();
         wakeLock.release();
-        this.finish();
+        //this.finish();
     }
 
     @Override
