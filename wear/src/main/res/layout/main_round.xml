@@ -129,6 +129,29 @@
             android:textColor="@android:color/primary_text_dark"
             android:textAlignment="center" />
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="60dp"
+            android:layout_height="20dp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@android:drawable/ic_lock_idle_low_battery"
+                android:id="@+id/imageView" />
+
+            <TextView
+                android:layout_width="40dp"
+                android:layout_height="20dp"
+                android:text="100%"
+                android:id="@+id/batteryText"
+                android:gravity="center_vertical"
+                android:paddingLeft="3dp"
+                android:textColor="@android:color/primary_text_dark" />
+        </LinearLayout>
+
     </RelativeLayout>
 
 

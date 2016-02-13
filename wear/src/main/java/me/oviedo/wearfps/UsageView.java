@@ -7,18 +7,13 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.RectF;
-import android.graphics.drawable.shapes.ArcShape;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.View;
 
 /**
  * TODO: document your custom view class.
  */
 public class UsageView extends View {
-    //private String mExampleString = "Hola!"; // TODO: use a default from R.string...
-    //private int mExampleColor = Color.RED; // TODO: use a default from R.color...
-    //private float mExampleDimension = 0; // TODO: use a default from R.dimen...
     private int mBarColor = getResources().getColor(R.color.white);
     private float mPercent = 100;
     private int mDir = 1;

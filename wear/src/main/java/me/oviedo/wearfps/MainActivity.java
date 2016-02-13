@@ -1,13 +1,11 @@
 package me.oviedo.wearfps;
 
 import android.animation.Animator;
-import android.animation.ValueAnimator;
-import android.app.Activity;
-import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.v4.content.LocalBroadcastManager;
@@ -34,7 +32,7 @@ public class MainActivity extends WearableActivity {
     private WatchViewStub mContainerView;
 
     private UsageView rUsageView, lUsageView;
-    private TextView fpsText, cpuTempText, gpuTempText, lPercentText, rPercentText;
+    private TextView fpsText, cpuTempText, gpuTempText, lPercentText, rPercentText, batteryText;
     private float currentRotation = 0;
     //private TextView mTextView;
     //private TextView mClockView;
@@ -78,8 +76,9 @@ public class MainActivity extends WearableActivity {
                 gpuTempText = (TextView) findViewById(R.id.gpuTempText);
                 lPercentText = (TextView) findViewById(R.id.lPercentText);
                 rPercentText = (TextView) findViewById(R.id.rPercentText);
+                batteryText = (TextView) findViewById(R.id.batteryText);
 
-                fpsText.setText("0");
+                //fpsText.setText("0");
 
                 setOrientationListener();
 
@@ -133,6 +132,16 @@ public class MainActivity extends WearableActivity {
                     fpsText.setText(String.format("%.0f", FPS));
                     cpuTempText.setText(String.format("%.0fºC", CT));
                     gpuTempText.setText(String.format("%.0fºC", GT));
+
+                    /* Nivel de la batería */
+                    IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+                    Intent batteryStatus = context.registerReceiver(null, ifilter);
+                    int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                    //int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+                    //Log.d("BatteryStatus", "level: " + level + ", scale: " + scale);
+                    //int batteryPct = 100*(level / scale);
+
+                    batteryText.setText(level + "%");
 
                     /*ValueAnimator rAnimator = ValueAnimator.ofFloat(rUsageView.getPercent(), GU);
                     rAnimator.setDuration(300);
