@@ -21,6 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private TextView remoteIp;
+    private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,17 +32,20 @@ public class MainActivity extends AppCompatActivity {
 
         remoteIp = (TextView) findViewById(R.id.remoteIpText);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                /*float R = Float.valueOf(bar2.getText().toString()), L = Float.valueOf(bar1.getText().toString());
-                if (R < 0) R = 0;
-                if (R > 100) R = 100;
-                if (L < 0) L = 0;
-                if (L > 100) L = 100;*/
 
-                requestRemoteIp();
+                if (BackgroundService.running) {
+                    Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
+                    intent.setAction(BackgroundService.FINISH_SELF_INTENT);
+                    startService(intent);
+                    setFabImage(false);
+                }
+                else {
+                    requestRemoteIp();
+                }
                 //new Thread(new Udp()).start();
 
                 /*Snackbar.make(view, "L:" + L + ", R: " + R, Snackbar.LENGTH_SHORT)
@@ -56,6 +60,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
+        setFabImage(BackgroundService.running);
+    }
+
+    private void setFabImage(boolean running) {
+        if (running) {
+            fab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+        } else {
+            fab.setImageResource(android.R.drawable.ic_media_play);
+        }
     }
 
     @Override
@@ -143,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.setAction(BackgroundService.START_INTENT_ACTION);
                     intent.putExtra(BackgroundService.IP_EXTRA, ipadd);
                     startService(intent);
+                    setFabImage(true);
                 } else {
                     remoteIp.setText("No se ha podido contactar con el servidor.");
                 }

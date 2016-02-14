@@ -29,13 +29,15 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     public static final String IP_EXTRA = "IP";
 
     public static final String START_INTENT_ACTION = "START";
-    private static final String FINISH_SELF_INTENT = "KILL_URSELF";
+    public static final String FINISH_SELF_INTENT = "KILL_URSELF";
 
     private static final int FOREGROUND_NOTIFICATION_ID = 183;
 
     public static final String START_ACTIVITY_PATH = "/start/MainActivity";
     public static final String ALL_DATA_PATH = "/data/all";
     public static final String FINISH_ACTIVITY_PATH = "/finish/MainActivity";
+
+    public static boolean running = false;
 
     //private String remoteAddr = null;
     private final int TCP_PORT = 55633;
@@ -54,6 +56,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         //new Thread(new Udp()).start();
+        running = true;
 
         if (intent.getAction().equals(FINISH_SELF_INTENT)) {
             talkToWear(FINISH_ACTIVITY_PATH, new byte[0]);
@@ -194,6 +197,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     @Override
     public void onDestroy() {
         // The service is no longer used and is being destroyed
+        running = false;
         Log.i("BackgroundService", "Destroying service...");
     }
 
