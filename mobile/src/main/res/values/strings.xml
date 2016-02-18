@@ -6,4 +6,5 @@
     <string name="temp">Temp </string>
     <string name="core">Core</string>
     <string name="gpu">GPU</string>
+    <string name="percent_icon">%</string>
 </resources>

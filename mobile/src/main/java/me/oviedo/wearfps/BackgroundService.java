@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,6 +38,8 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     public static final String ALL_DATA_PATH = "/data/all";
     public static final String FINISH_ACTIVITY_PATH = "/finish/MainActivity";
 
+    public static final String MOBILE_DATA_INTENT = "me.oviedo.wearfps.DATA_INTENT";
+
     public static boolean running = false;
 
     //private String remoteAddr = null;
@@ -49,6 +52,8 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     private Socket tcpSocket;
 
     private GoogleApiClient mGoogleApiClient;
+
+    private LocalBroadcastManager lbm;
 
     public BackgroundService() {
     }
@@ -72,6 +77,8 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
         if (intent.hasExtra(IP_EXTRA)) {
             serverIP = intent.getStringExtra(IP_EXTRA);
         }
+
+        lbm = LocalBroadcastManager.getInstance(this);
 
         // Put the service on the foreground
         Intent notificationIntent = new Intent(this, BackgroundService.class);
@@ -144,6 +151,16 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                         //call the method messageReceived from MyActivity class
                         Log.d("TCPClient", "Received message: " + serverMessage);
                         talkToWear(ALL_DATA_PATH, serverMessage.getBytes());
+
+                        //Mobile
+                        Intent intent = new Intent(MOBILE_DATA_INTENT);
+                        String[] values = serverMessage.split("-");
+                        intent.putExtra("CL", Integer.valueOf(values[0]));
+                        intent.putExtra("GL", Integer.valueOf(values[1]));
+                        intent.putExtra("FPS", Integer.valueOf(values[2]));
+                        intent.putExtra("CT", Integer.valueOf(values[3]));
+                        intent.putExtra("GT", Integer.valueOf(values[4]));
+                        lbm.sendBroadcast(intent);
 
                     }
                     serverMessage = null;

@@ -1,10 +1,15 @@
 package me.oviedo.wearfps;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.databinding.DataBindingUtil;
 import android.os.AsyncTask;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -23,6 +28,14 @@ public class MainActivity extends AppCompatActivity {
 
     private FloatingActionButton fab;
 
+    private BroadcastReceiver mBroadcastReceiver;
+
+    /* Views*/
+    private TextView cpuTempText, gpuTempText;
+    private LoadView cpuLoadView, gpuLoadView;
+
+    private final String sDegCen = "ºC";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -30,6 +43,10 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        findMyViews();
+
+        setBroadcastReceiver();
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -56,10 +73,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void findMyViews() {
+        cpuTempText = (TextView) findViewById(R.id.cpuTempText);
+        gpuTempText = (TextView) findViewById(R.id.gpuTempText);
+        gpuLoadView = (LoadView) findViewById(R.id.gpuLoadBar);
+        cpuLoadView = (LoadView) findViewById(R.id.cpuLoadBar);
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
         setFabImage(BackgroundService.running);
+        startBroadcastReceiver();
     }
 
     private void setFabImage(boolean running) {
@@ -70,9 +95,44 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void setBroadcastReceiver() {
+        mBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
+                if (intent.getAction().equals(BackgroundService.MOBILE_DATA_INTENT)) {
+                    final int CL = intent.getIntExtra("CL", 0);
+                    final int GL = intent.getIntExtra("GL", 0);
+                    final int FPS = intent.getIntExtra("FPS", 0);
+                    final int CT = intent.getIntExtra("CT", 0);
+                    final int GT = intent.getIntExtra("GT", 0);
+
+                    cpuLoadView.setPercentage(CL);
+                    gpuLoadView.setPercentage(GL);
+                    //fpsText.setText(String.format("%.0f", FPS));
+                    cpuTempText.setText(CT + sDegCen);
+                    gpuTempText.setText(GT + sDegCen);
+
+                }
+
+            }
+        };
+    }
+
+    private void startBroadcastReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BackgroundService.MOBILE_DATA_INTENT);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
+    }
+
+    private void stopBroadcastReceiver() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
+        stopBroadcastReceiver();
     }
 
     @Override
