@@ -128,6 +128,7 @@ public class LoadView extends View {
     public void setBarColor(int color) {
         mBackgroundColor = color;
         invalidateColor();
+        requestLayout();
     }
 
     public int getPercentage() { return mPercentage; }
@@ -135,5 +136,6 @@ public class LoadView extends View {
     public void setPercentage(int percentage) {
         mPercentage = percentage;
         invalidatePercentage();
+        requestLayout();
     }
 }
