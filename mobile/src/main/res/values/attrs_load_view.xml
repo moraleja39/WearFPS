@@ -1,0 +1,6 @@
+<resources>
+    <declare-styleable name="LoadView">
+        <attr name="percentage" format="integer" />
+        <attr name="backgroundColor" format="color" />
+    </declare-styleable>
+</resources>

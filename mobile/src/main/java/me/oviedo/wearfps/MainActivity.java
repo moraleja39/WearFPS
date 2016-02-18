@@ -1,6 +1,7 @@
 package me.oviedo.wearfps;
 
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -20,17 +21,15 @@ import java.net.InetAddress;
 public class MainActivity extends AppCompatActivity {
 
 
-    private TextView remoteIp;
     private FloatingActionButton fab;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-
-        remoteIp = (TextView) findViewById(R.id.remoteIpText);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -150,7 +149,6 @@ public class MainActivity extends AppCompatActivity {
             protected void onPostExecute(Void result) {
                 super.onPostExecute(result);
                 if (ipadd != null) {
-                    remoteIp.setText("IP del host: " + ipadd + "\nIniciando conexión...");
 
                     Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
                     intent.setAction(BackgroundService.START_INTENT_ACTION);
@@ -158,7 +156,6 @@ public class MainActivity extends AppCompatActivity {
                     startService(intent);
                     setFabImage(true);
                 } else {
-                    remoteIp.setText("No se ha podido contactar con el servidor.");
                 }
             }
         };
