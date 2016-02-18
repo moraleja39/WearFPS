@@ -77,7 +77,7 @@ public class LoadView extends View {
         width = w;
         height = h;
 
-        invalidateBar();
+        invalidatePercentage();
     }
 
     private void invalidatePercentage() {
@@ -85,7 +85,7 @@ public class LoadView extends View {
         mTextWidth = mTextPaint.measureText(mPercentText);
 
         Paint.FontMetrics fontMetrics = mTextPaint.getFontMetrics();
-        mTextHeight = fontMetrics.bottom;
+        mTextHeight = fontMetrics.descent;
 
         invalidateBar();
     }
@@ -117,15 +117,15 @@ public class LoadView extends View {
         canvas.drawRect(mPercentBar, mBarPaint);
 
         // Draw the text.
-        canvas.drawText(mPercentText, (width - mTextWidth) / 2, (height + mTextHeight) / 2, mTextPaint);
+        canvas.drawText(mPercentText, (width - mTextWidth) / 2, (height/2) + mTextHeight, mTextPaint);
 
     }
 
-    public int getBackgroundColor() {
+    public int getBarColor() {
         return mBackgroundColor;
     }
 
-    public void setBackgroundColor(int color) {
+    public void setBarColor(int color) {
         mBackgroundColor = color;
         invalidateColor();
     }
