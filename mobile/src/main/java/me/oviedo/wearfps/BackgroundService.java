@@ -39,6 +39,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
     public static final String FINISH_ACTIVITY_PATH = "/finish/MainActivity";
 
     public static final String MOBILE_DATA_INTENT = "me.oviedo.wearfps.DATA_INTENT";
+    public static final String MOBILE_INFO_INTENT = "me.oviedo.wearfps.INFO_INTENT";
 
     public static boolean running = false;
 
@@ -117,7 +118,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
 
     class TCPClient implements Runnable {
 
-        char[] buf = new char[64];
+        char[] buf = new char[256];
         String serverMessage;
         int len = 0;
 
@@ -146,11 +147,25 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                     serverMessage = new String(buf, 0, len);
 
 
-                    if (serverMessage != null) {
+                    if (serverMessage.startsWith(":")) {
+                        Intent intent = new Intent(MOBILE_INFO_INTENT);
+                        String[] msgs = serverMessage.trim().split("\n");
+                        for (String m : msgs) {
+                            m = m.substring(1);
+                            String[] values = m.split("=");
+                            Log.d("TCPClient", values[0] + ": " + values[1]);
+                            intent.putExtra(values[0], values[1]);
+                        }
+                        lbm.sendBroadcast(intent);
+                        //Log.i("BackgroundService", values[0] + ": " + values[1]);
+                    } else if (!serverMessage.equals("")) {
                         receivedCount++;
                         //call the method messageReceived from MyActivity class
-                        Log.d("TCPClient", "Received message: " + serverMessage);
+                        serverMessage = serverMessage.trim();
+                        Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
+
                         talkToWear(ALL_DATA_PATH, serverMessage.getBytes());
+
 
                         //Mobile
                         Intent intent = new Intent(MOBILE_DATA_INTENT);
@@ -160,6 +175,8 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                         intent.putExtra("FPS", Integer.valueOf(values[2]));
                         intent.putExtra("CT", Integer.valueOf(values[3]));
                         intent.putExtra("GT", Integer.valueOf(values[4]));
+                        intent.putExtra("CF", Integer.valueOf(values[5]));
+                        intent.putExtra("GF", Integer.valueOf(values[6]));
                         lbm.sendBroadcast(intent);
 
                     }

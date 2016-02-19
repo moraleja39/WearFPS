@@ -4,9 +4,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.databinding.DataBindingUtil;
 import android.os.AsyncTask;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
@@ -31,7 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private BroadcastReceiver mBroadcastReceiver;
 
     /* Views*/
-    private TextView cpuTempText, gpuTempText;
+    private TextView cpuTempText, gpuTempText, cpuNameText, gpuNameText, cpuFreqText, gpuFreqText;
     private LoadView cpuLoadView, gpuLoadView;
 
     private final String sDegCen = "ºC";
@@ -45,6 +43,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         findMyViews();
+
+        if (savedInstanceState != null) {
+            cpuNameText.setText(savedInstanceState.getString("cpu"));
+            gpuNameText.setText(savedInstanceState.getString("gpu"));
+        }
 
         setBroadcastReceiver();
 
@@ -78,6 +81,17 @@ public class MainActivity extends AppCompatActivity {
         gpuTempText = (TextView) findViewById(R.id.gpuTempText);
         gpuLoadView = (LoadView) findViewById(R.id.gpuLoadBar);
         cpuLoadView = (LoadView) findViewById(R.id.cpuLoadBar);
+        cpuNameText = (TextView) findViewById(R.id.cpuNameText);
+        gpuNameText = (TextView) findViewById(R.id.gpuNameText);
+        cpuFreqText = (TextView) findViewById(R.id.cpuCoreText);
+        gpuFreqText = (TextView) findViewById(R.id.gpuCoreText);
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString("cpu", cpuNameText.getText().toString());
+        outState.putString("gpu", gpuNameText.getText().toString());
     }
 
     @Override
@@ -106,13 +120,24 @@ public class MainActivity extends AppCompatActivity {
                     final int FPS = intent.getIntExtra("FPS", 0);
                     final int CT = intent.getIntExtra("CT", 0);
                     final int GT = intent.getIntExtra("GT", 0);
+                    final int CF = intent.getIntExtra("CF", 0);
+                    final int GF = intent.getIntExtra("GF", 0);
 
                     cpuLoadView.setPercentage(CL);
                     gpuLoadView.setPercentage(GL);
                     //fpsText.setText(String.format("%.0f", FPS));
                     cpuTempText.setText(CT + sDegCen);
                     gpuTempText.setText(GT + sDegCen);
+                    cpuFreqText.setText(CF + "MHz");
+                    gpuFreqText.setText(GF + "MHz");
 
+                } else if (intent.getAction().equals(BackgroundService.MOBILE_INFO_INTENT)) {
+                    if (intent.hasExtra("cpu")) {
+                        cpuNameText.setText(intent.getStringExtra("cpu"));
+                    }
+                    if (intent.hasExtra("gpu")) {
+                        gpuNameText.setText(intent.getStringExtra("gpu"));
+                    }
                 }
 
             }
@@ -122,6 +147,7 @@ public class MainActivity extends AppCompatActivity {
     private void startBroadcastReceiver() {
         IntentFilter filter = new IntentFilter();
         filter.addAction(BackgroundService.MOBILE_DATA_INTENT);
+        filter.addAction(BackgroundService.MOBILE_INFO_INTENT);
         LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
     }
 

@@ -36,7 +36,6 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom"
             android:layout_marginStart="10dp"
-            android:text="Small Text"
             android:textAppearance="?android:attr/textAppearanceSmall" />
     </LinearLayout>
 
@@ -57,7 +56,7 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             xmlns:app="http://schemas.android.com/apk/res-auto"
-            app:percentage="60"
+            app:percentage="0"
             app:backgroundColor="@color/colorAccent"/>
 
     </LinearLayout>
@@ -86,7 +85,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="30ºC"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
 
@@ -108,7 +106,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="1500MHz"
                 android:textAppearance="?android:attr/textAppearanceLarge" />
         </LinearLayout>
     </LinearLayout>
