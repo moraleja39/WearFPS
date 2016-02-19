@@ -160,8 +160,11 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                         //Log.i("BackgroundService", values[0] + ": " + values[1]);
                     } else if (!serverMessage.equals("")) {
                         receivedCount++;
-                        //call the method messageReceived from MyActivity class
+
+                        //En caso de que se junten dos mensajes, nos quedamos con el útlimo
                         serverMessage = serverMessage.trim();
+                        serverMessage = serverMessage.substring(serverMessage.lastIndexOf('\n') + 1);
+
                         Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
 
                         talkToWear(ALL_DATA_PATH, serverMessage.getBytes());
