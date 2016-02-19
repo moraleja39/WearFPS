@@ -95,6 +95,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onBackPressed() {
+        if (BackgroundService.running) moveTaskToBack(false);
+        else super.onBackPressed();
+    }
+
+    @Override
     protected void onStart() {
         super.onStart();
         setFabImage(BackgroundService.running);
