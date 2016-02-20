@@ -14,6 +14,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import java.io.InterruptedIOException;
@@ -57,10 +58,8 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (BackgroundService.running) {
-                    Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
-                    intent.setAction(BackgroundService.FINISH_SELF_INTENT);
-                    startService(intent);
-                    setFabImage(false);
+                    //invalidateOptionsMenu();
+                    goAmbient(true);
                 }
                 else {
                     requestRemoteIp();
@@ -109,10 +108,32 @@ public class MainActivity extends AppCompatActivity {
 
     private void setFabImage(boolean running) {
         if (running) {
-            fab.setImageResource(android.R.drawable.ic_menu_close_clear_cancel);
+            fab.setImageResource(R.drawable.ic_fullscreen_24dp);
         } else {
             fab.setImageResource(android.R.drawable.ic_media_play);
         }
+    }
+
+    private void goAmbient(boolean fullscreen)
+    {
+        View decorView = getWindow().getDecorView();
+        int uiOptions;
+        if (fullscreen) {
+            // Hide the status bar.
+            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                    | View.SYSTEM_UI_FLAG_FULLSCREEN
+                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+            // Remember that you should never show the action bar if the
+            // status bar is hidden, so hide that too if necessary.
+            getSupportActionBar().hide();
+        } else {
+            uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
+            getSupportActionBar().show();
+        }
+        decorView.setSystemUiVisibility(uiOptions);
     }
 
     private void setBroadcastReceiver() {
@@ -175,15 +196,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem disc = menu.findItem(R.id.action_stop_server);
+        if (BackgroundService.running) {
+            disc.setVisible(true);
+        } else {
+            disc.setVisible(false);
+        }
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+
         if (id == R.id.action_settings) {
-            return true;
+            Intent i = new Intent(this, SettingsActivity.class);
+            startActivity(i);
+
+        } else if (id == R.id.action_stop_server) {
+            Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
+            intent.setAction(BackgroundService.FINISH_SELF_INTENT);
+            startService(intent);
+            setFabImage(false);
         }
 
         return super.onOptionsItemSelected(item);
