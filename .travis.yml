@@ -2,7 +2,6 @@ language: android
 sudo: required
 jdk:
   - oraclejdk8
-  - openjdk8
 android:
   components:
     # Uncomment the lines below if you want to
