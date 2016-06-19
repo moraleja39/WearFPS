@@ -25,8 +25,8 @@ public class SettingsActivity extends PreferenceActivity {
         getDelegate().onCreate(savedInstanceState);
         super.onCreate(savedInstanceState);
 
-        /*setContentView(R.layout.settings_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);*/
+        setContentView(R.layout.settings_main);
+        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);*/
 
         Toolbar toolbar = new Toolbar(getApplicationContext());
         toolbar.setPopupTheme(R.style.AppTheme_PopupOverlay);
