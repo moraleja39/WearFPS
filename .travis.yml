@@ -24,6 +24,8 @@ android:
     # - sys-img-armeabi-v7a-android-19
     # - sys-img-x86-android-17
 
+sudo: required
+
 before_install:
   # Disable services enabled by default
   # http://docs.travis-ci.com/user/database-setup/#MySQL
