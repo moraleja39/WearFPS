@@ -30,6 +30,38 @@
             android:key="pref_3"
             android:title="@string/pref_wear_autostart"
             android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
+        <CheckBoxPreference
+            android:key="pref_3"
+            android:title="@string/pref_wear_autostart"
+            android:defaultValue="true" />
 
     </PreferenceCategory>
 
