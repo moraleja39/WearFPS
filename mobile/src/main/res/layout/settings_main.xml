@@ -25,6 +25,13 @@
         android:layout_width="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_height="wrap_content"
-        android:id="@+id/fragmentHolder"/>
+        android:id="@android:id/content">
+
+        <ListView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@android:id/list"/>
+
+        </FrameLayout>
 
 </android.support.design.widget.CoordinatorLayout>

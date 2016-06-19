@@ -13,4 +13,8 @@
     <string name="pref_cat_wear">Wear</string>
     <string name="pref_wear_autostart">Auto-start the app on the wearable</string>
     <string name="action_stop_server">Disconnect</string>
+
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>

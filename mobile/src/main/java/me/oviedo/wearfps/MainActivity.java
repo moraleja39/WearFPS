@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
@@ -24,7 +25,7 @@ import java.net.InetAddress;
 
 public class MainActivity extends AppCompatActivity {
 
-
+    private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fab;
 
     private BroadcastReceiver mBroadcastReceiver;
@@ -52,14 +53,15 @@ public class MainActivity extends AppCompatActivity {
 
         setBroadcastReceiver();
 
-        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
                 if (BackgroundService.running) {
                     //invalidateOptionsMenu();
-                    goAmbient(true);
+                    Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);
+                    startActivity(i);
+
                 }
                 else {
                     requestRemoteIp();
@@ -76,6 +78,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findMyViews() {
+        coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         cpuTempText = (TextView) findViewById(R.id.cpuTempText);
         gpuTempText = (TextView) findViewById(R.id.gpuTempText);
         gpuLoadView = (LoadView) findViewById(R.id.gpuLoadBar);
@@ -114,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void goAmbient(boolean fullscreen)
+    /*private void goAmbient(boolean fullscreen)
     {
         View decorView = getWindow().getDecorView();
         int uiOptions;
@@ -129,12 +133,14 @@ public class MainActivity extends AppCompatActivity {
             // Remember that you should never show the action bar if the
             // status bar is hidden, so hide that too if necessary.
             getSupportActionBar().hide();
+            coordinatorLayout.setFitsSystemWindows(false);
         } else {
             uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
             getSupportActionBar().show();
+            coordinatorLayout.setFitsSystemWindows(true);
         }
         decorView.setSystemUiVisibility(uiOptions);
-    }
+    }*/
 
     private void setBroadcastReceiver() {
         mBroadcastReceiver = new BroadcastReceiver() {
