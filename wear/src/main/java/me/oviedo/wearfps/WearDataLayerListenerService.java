@@ -9,9 +9,9 @@ import com.google.android.gms.wearable.WearableListenerService;
 
 
 public class WearDataLayerListenerService extends WearableListenerService {
-    public static final String START_ACTIVITY_PATH = "/start/MainActivity";
-    public static final String FINISH_ACTIVITY_PATH = "/finish/MainActivity";
-    public static final String ALL_DATA_PATH = "/data/all";
+    public static final String START_ACTIVITY_PATH = "/me.oviedo.wearfps/start/MainActivity";
+    public static final String FINISH_ACTIVITY_PATH = "/me.oviedo.wearfps/finish/MainActivity";
+    public static final String ALL_DATA_PATH = "/me.oviedo.wearfps/data/all";
 
     public static final String APP_INTENT = "me.oviedo.wearfps.service.UPDATE_UI";
     public static final String FINISH_INTENT = "me.oviedo.wearfps.service.FINISH_REQUESTED";
@@ -36,7 +36,7 @@ public class WearDataLayerListenerService extends WearableListenerService {
 
         } else if (messageEvent.getPath().equals(ALL_DATA_PATH)) {
             String s = new String(messageEvent.getData());
-            String[] values = s.split("-");
+            String[] values = s.split(";");
             Intent intent = new Intent(APP_INTENT);
             intent.putExtra("CU", Float.valueOf(values[0]));
             intent.putExtra("GU", Float.valueOf(values[1]));

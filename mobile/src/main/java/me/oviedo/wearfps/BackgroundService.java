@@ -34,9 +34,9 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
 
     private static final int FOREGROUND_NOTIFICATION_ID = 183;
 
-    public static final String START_ACTIVITY_PATH = "/start/MainActivity";
-    public static final String ALL_DATA_PATH = "/data/all";
-    public static final String FINISH_ACTIVITY_PATH = "/finish/MainActivity";
+    public static final String START_ACTIVITY_PATH = "/me.oviedo.wearfps/start/MainActivity";
+    public static final String ALL_DATA_PATH = "/me.oviedo.wearfps/data/all";
+    public static final String FINISH_ACTIVITY_PATH = "/me.oviedo.wearfps/finish/MainActivity";
 
     public static final String MOBILE_DATA_INTENT = "me.oviedo.wearfps.DATA_INTENT";
     public static final String MOBILE_INFO_INTENT = "me.oviedo.wearfps.INFO_INTENT";
@@ -172,7 +172,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
 
                         //Mobile
                         Intent intent = new Intent(MOBILE_DATA_INTENT);
-                        String[] values = serverMessage.split("-");
+                        String[] values = serverMessage.split(";");
                         intent.putExtra("CL", Integer.valueOf(values[0]));
                         intent.putExtra("GL", Integer.valueOf(values[1]));
                         intent.putExtra("FPS", Integer.valueOf(values[2]));

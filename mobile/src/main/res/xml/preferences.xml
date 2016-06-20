@@ -30,37 +30,44 @@
             android:key="pref_3"
             android:title="@string/pref_wear_autostart"
             android:defaultValue="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_test"
+        android:title="Test">
+
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_4"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_5"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_6"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_7"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_8"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_9"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_10"
+            android:title="Test"
             android:defaultValue="true" />
         <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
+            android:key="pref_11"
+            android:title="Test"
             android:defaultValue="true" />
 
     </PreferenceCategory>
