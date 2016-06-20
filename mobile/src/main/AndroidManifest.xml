@@ -33,7 +33,7 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings"
             android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar.Settings">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="me.oviedo.wearfps.MainActivity" />
