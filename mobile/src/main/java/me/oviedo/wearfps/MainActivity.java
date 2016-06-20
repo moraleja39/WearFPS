@@ -4,16 +4,21 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Configuration;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.TextView;
@@ -38,19 +43,29 @@ public class MainActivity extends AppCompatActivity {
 
     private MenuItem disconnectMenuItem;
 
+    private View mContentView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);*/
 
         findMyViews();
+
+        mVisible = true;
 
         if (savedInstanceState != null) {
             cpuNameText.setText(savedInstanceState.getString("cpu"));
             gpuNameText.setText(savedInstanceState.getString("gpu"));
+            if (savedInstanceState.getBoolean("fullscreen", false)) {
+                //getSupportActionBar().hide();
+                hide();
+                //getSupportActionBar().show();
+            }
         }
 
         setBroadcastReceiver();
@@ -60,9 +75,9 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 if (BackgroundService.running) {
-                    //invalidateOptionsMenu();
-                    Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);
-                    startActivity(i);
+                    //Intent i = new Intent(getApplicationContext(), FullscreenActivity.class);
+                    //startActivity(i);
+                    hide();
 
                 }
                 else {
@@ -90,6 +105,9 @@ public class MainActivity extends AppCompatActivity {
         gpuNameText = (TextView) findViewById(R.id.gpuNameText);
         cpuFreqText = (TextView) findViewById(R.id.cpuCoreText);
         gpuFreqText = (TextView) findViewById(R.id.gpuCoreText);
+
+        //mContentView = findViewById(R.id.main_activity_content);
+        mContentView = coordinatorLayout;
     }
 
     @Override
@@ -97,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         outState.putString("cpu", cpuNameText.getText().toString());
         outState.putString("gpu", gpuNameText.getText().toString());
+        outState.putBoolean("fullscreen", !mVisible);
     }
 
     @Override
@@ -119,6 +138,15 @@ public class MainActivity extends AppCompatActivity {
             fab.setImageResource(android.R.drawable.ic_media_play);
         }
     }
+
+    /*@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        //setRequestedOrientation(newConfig.orientation);
+        //Log.d("MainActivity", "Config changed, orientation: " + newConfig.orientation);
+        //setContentView(R.layout.activity_main);
+        if (mVisible) this.recreate();
+    }*/
 
     /*private void goAmbient(boolean fullscreen)
     {
@@ -204,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    /*@Override
+    @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem disc = menu.findItem(R.id.action_stop_server);
         if (BackgroundService.running) {
@@ -213,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
             disc.setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
-    }*/
+    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -304,5 +332,106 @@ public class MainActivity extends AppCompatActivity {
 
         async_cient.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
+
+
+    /* Fullscreen */
+    private final Handler mHideHandler = new Handler();
+    private static final int UI_ANIMATION_DELAY = 300;
+    private boolean mVisible;
+    private final int fullscreenDecorFlags = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+
+    /*private void hide() {
+        // Hide UI first
+
+        mContentView.setOnTouchListener(mTouchListener);
+
+        //this.setconfig
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.hide();
+        }
+
+        mVisible = false;
+
+        // Schedule a runnable to remove the status and navigation bar after a delay
+        mHideHandler.removeCallbacks(mShowPart2Runnable);
+        mHideHandler.postDelayed(mHidePart2Runnable, UI_ANIMATION_DELAY);
+    }
+
+    private final Runnable mHidePart2Runnable = new Runnable() {
+        @Override
+        public void run() {
+            // Delayed removal of status and navigation bar
+
+            // Note that some of these constants are new as of API 16 (Jelly Bean)
+            // and API 19 (KitKat). It is safe to use them, as they are inlined
+            // at compile-time and do nothing on earlier devices.
+            //mContentView.setFitsSystemWindows(true);
+            coordinatorLayout.setFitsSystemWindows(false);
+            //mContentView.setFitsSystemWindows(false);
+            mContentView.setSystemUiVisibility(fullscreenDecorFlags);
+        }
+    };*/
+
+    private void hide() {
+        mContentView.setOnTouchListener(mTouchListener);
+
+        mVisible = false;
+        coordinatorLayout.setFitsSystemWindows(false);
+        //mContentView.setFitsSystemWindows(false);
+        mContentView.setSystemUiVisibility(fullscreenDecorFlags);
+    }
+
+    /*private void show() {
+        // Show the system bar
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        mVisible = true;
+
+        mContentView.setOnTouchListener(null);
+
+        // Schedule a runnable to display UI elements after a delay
+        mHideHandler.removeCallbacks(mHidePart2Runnable);
+        mHideHandler.postDelayed(mShowPart2Runnable, UI_ANIMATION_DELAY);
+    }
+
+    private final Runnable mShowPart2Runnable = new Runnable() {
+        @Override
+        public void run() {
+            // Delayed display of UI elements
+            ActionBar actionBar = getSupportActionBar();
+            if (actionBar != null) {
+                actionBar.show();
+            }
+
+            coordinatorLayout.setFitsSystemWindows(true);
+        }
+    };*/
+
+    private void show() {
+        // Show the system bar
+        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        mVisible = true;
+
+        mContentView.setOnTouchListener(null);
+        coordinatorLayout.setFitsSystemWindows(true);
+    }
+
+    private final View.OnClickListener mClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            show();
+        }
+    };
+
+    private final View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+        @Override
+        public boolean onTouch(View v, MotionEvent event) {
+            show();
+            return false;
+        }
+    };
+
 }
 
