@@ -7,15 +7,19 @@ import android.preference.Preference;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     //SharedPreferences.OnSharedPreferenceChangeListener listener = null;
+
+    View test;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -24,7 +28,12 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        Bundle args = getArguments();
+        if (args.getBoolean("isWearScreen", false)) addPreferencesFromResource(R.xml.wear_preferences);
+        else addPreferencesFromResource(R.xml.preferences);
+        //PreferenceCategory cat = (PreferenceCategory) findPreference("pref_cat");
+        //findPreference("pref_wear_autostart").getView(test, null).setVisibility(View.GONE);
+        //test.setVisibility(View.GONE);
     }
 
     @Override
@@ -52,11 +61,17 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             //Toast.makeText(getActivity(), "Clicked", Toast.LENGTH_SHORT).show();
             Preference pref = findPreference(key);
             Preference wear = findPreference("pref_wear_autostart");
-            PreferenceCategory cat = (PreferenceCategory) findPreference("pref_cat");
-            if (pref.isEnabled()) {
-                cat.removePreference(wear);
+            //PreferenceCategory cat = (PreferenceCategory) findPreference("pref_cat");
+            LinearLayout wearView = (LinearLayout) wear.getView(null, null);
+            //Log.d("Settings", "Obj: " + wearView.toString() + "\n" + wearView.getParent());
+            if (prefs.getBoolean(key, false)) {
+                wearView.setVisibility(View.VISIBLE);
+                wearView.invalidate();
+                Log.d("Settings", "Showing view");
             } else {
-                cat.addPreference(wear);
+                wearView.setVisibility(View.GONE);
+                wearView.invalidate();
+                Log.d("Settings", "Hiding view");
             }
         }*/
     }

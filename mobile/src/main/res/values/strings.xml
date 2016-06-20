@@ -9,6 +9,7 @@
     <string name="percent_icon">%</string>
     <string name="pref_wear_enabled">Enable wear app</string>
     <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_wear_settings">Wear settings</string>
     <string name="pref_wear_enabled_description">If you have a wearable, the app should be already installed.</string>
     <string name="pref_cat_wear">Wear</string>
     <string name="pref_wear_autostart">Auto-start the app on the wearable</string>
@@ -17,4 +18,5 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="pref_wear_screen">Wear settings</string>
 </resources>

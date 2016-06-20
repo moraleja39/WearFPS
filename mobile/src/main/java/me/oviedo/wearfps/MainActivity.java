@@ -36,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final String sDegCen = "ºC";
 
+    private MenuItem disconnectMenuItem;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -198,10 +200,11 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+        disconnectMenuItem = menu.findItem(R.id.action_stop_server);
         return true;
     }
 
-    @Override
+    /*@Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         MenuItem disc = menu.findItem(R.id.action_stop_server);
         if (BackgroundService.running) {
@@ -210,7 +213,7 @@ public class MainActivity extends AppCompatActivity {
             disc.setVisible(false);
         }
         return super.onPrepareOptionsMenu(menu);
-    }
+    }*/
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -229,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
             intent.setAction(BackgroundService.FINISH_SELF_INTENT);
             startService(intent);
             setFabImage(false);
+            disconnectMenuItem.setVisible(false);
         }
 
         return super.onOptionsItemSelected(item);
@@ -292,6 +296,7 @@ public class MainActivity extends AppCompatActivity {
                     intent.putExtra(BackgroundService.IP_EXTRA, ipadd);
                     startService(intent);
                     setFabImage(true);
+                    disconnectMenuItem.setVisible(true);
                 } else {
                 }
             }

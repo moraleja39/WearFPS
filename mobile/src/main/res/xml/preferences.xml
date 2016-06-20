@@ -3,35 +3,18 @@
     android:title="Settings"
     android:key="pref_screen">
 
-    <PreferenceCategory
-        android:key="pref_cat"
-        android:title="@string/pref_cat_wear">
+    <SwitchPreference
+        android:key="pref_wear_enabled"
+        android:defaultValue="false"
+        android:title="@string/pref_wear_enabled"
+        android:summary="@string/pref_wear_enabled_description" />
 
-        <SwitchPreference
-            android:key="pref_wear_enabled"
-            android:defaultValue="false"
-            android:title="@string/pref_wear_enabled"
-            android:summary="@string/pref_wear_enabled_description" />
-
-        <CheckBoxPreference
-            android:dependency="pref_wear_enabled"
-            android:key="pref_wear_autostart"
-            android:title="@string/pref_wear_autostart"
-            android:defaultValue="true" />
-        <CheckBoxPreference
-            android:key="pref_1"
-            android:title="@string/pref_wear_autostart"
-            android:defaultValue="true" />
-        <CheckBoxPreference
-            android:key="pref_2"
-            android:title="@string/pref_wear_autostart"
-            android:defaultValue="true" />
-        <CheckBoxPreference
-            android:key="pref_3"
-            android:title="@string/pref_wear_autostart"
-            android:defaultValue="true" />
-
-    </PreferenceCategory>
+    <Preference android:title="@string/pref_wear_screen"
+        android:dependency="pref_wear_enabled">
+        <intent android:targetPackage="me.oviedo.wearfps"
+            android:targetClass="me.oviedo.wearfps.SettingsActivity"
+            android:action="me.oviedo.wearfps.prefs.WEAR" />
+    </Preference>
 
     <PreferenceCategory
         android:key="pref_test"
