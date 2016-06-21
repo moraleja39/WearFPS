@@ -97,7 +97,7 @@ public class MainActivity extends WearableActivity {
                 mContainerView.setOnTouchListener(new View.OnTouchListener() {
                     @Override
                     public boolean onTouch(View v, MotionEvent event) {
-                        Log.d("TouchEvent", "Touch event caught");
+                        //Log.d("TouchEvent", "Touch event caught");
                         timeoutTimer.cancel();
                         timeoutTimer.purge();
                         timeoutTimer = new Timer();
@@ -121,26 +121,29 @@ public class MainActivity extends WearableActivity {
                 .addOnConnectionFailedListener(this)
                 .build();*/
         mBroadcastReceiver = new BroadcastReceiver() {
+            int CU, GU, FPS, CT, GT, level;
             @Override
             public void onReceive(Context context, Intent intent) {
                 //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
                 if (intent.getAction().equals(WearDataLayerListenerService.APP_INTENT)) {
-                    final float CU = intent.getFloatExtra("CU", 0);
-                    final float GU = intent.getFloatExtra("GU", 0);
-                    final float FPS = intent.getFloatExtra("FPS", 0);
-                    final float CT = intent.getFloatExtra("CT", 0);
-                    final float GT = intent.getFloatExtra("GT", 0);
+                    CU = intent.getIntExtra("CU", 0);
+                    GU = intent.getIntExtra("GU", 0);
+                    FPS = intent.getIntExtra("FPS", 0);
+                    CT = intent.getIntExtra("CT", 0);
+                    GT = intent.getIntExtra("GT", 0);
 
-                    lPercentText.setText(String.format("%.0f%%", CU));
-                    rPercentText.setText(String.format("%.0f%%", GU));
-                    fpsText.setText(String.format("%.0f", FPS));
-                    cpuTempText.setText(String.format("%.0fºC", CT));
-                    gpuTempText.setText(String.format("%.0fºC", GT));
+                    lPercentText.setText(String.format(Locale.US, "%d%%", CU));
+                    rPercentText.setText(String.format(Locale.US, "%d%%", GU));
+                    fpsText.setText(String.format(Locale.US, "%d", FPS));
+                    cpuTempText.setText(String.format(Locale.US, "%dºC", CT));
+                    gpuTempText.setText(String.format(Locale.US, "%dºC", GT));
 
                     /* Nivel de la batería */
                     IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
                     Intent batteryStatus = context.registerReceiver(null, ifilter);
-                    int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                    if (batteryStatus != null) {
+                        level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+                    }
                     //int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
                     //Log.d("BatteryStatus", "level: " + level + ", scale: " + scale);
                     //int batteryPct = 100*(level / scale);
@@ -316,10 +319,10 @@ public class MainActivity extends WearableActivity {
 
     @Override
     protected void onStop() {
-        super.onStop();
         LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
         orientationEventListener.disable();
         wakeLock.release();
+        super.onStop();
         //this.finish();
     }
 

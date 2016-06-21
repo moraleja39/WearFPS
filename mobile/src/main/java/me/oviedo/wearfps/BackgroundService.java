@@ -27,6 +27,7 @@ import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
 
 public class BackgroundService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
@@ -147,6 +148,10 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                 //BufferedReader in = new BufferedReader(isr);
                 //InputStream is = tcpSocket.getInputStream();
 
+                // Declaramos las variables utilizadas para los datos, para evitar que se reasignen en cada mensaje recibido
+                int cl, gl, fps, ct, gt, cf, gf;
+                ByteBuffer buffer = ByteBuffer.allocate(4 * 7);
+
                 while ((len = isr.read(buf, 0, buf.length)) > 0) {
                     //serverMessage = in.readLine();
                     //buf[len] = 0x00;
@@ -173,20 +178,26 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                         serverMessage = serverMessage.substring(serverMessage.lastIndexOf('\n') + 1);
 
                         //Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
-
-                        talkToWear(ALL_DATA_PATH, serverMessage.getBytes());
-
-
-                        //Mobile
-                        Intent intent = new Intent(MOBILE_DATA_INTENT);
+                        buffer.clear();
                         String[] values = serverMessage.split(";");
-                        intent.putExtra("CL", Integer.valueOf(values[0]));
-                        intent.putExtra("GL", Integer.valueOf(values[1]));
-                        intent.putExtra("FPS", Integer.valueOf(values[2]));
-                        intent.putExtra("CT", Integer.valueOf(values[3]));
-                        intent.putExtra("GT", Integer.valueOf(values[4]));
-                        intent.putExtra("CF", Integer.valueOf(values[5]));
-                        intent.putExtra("GF", Integer.valueOf(values[6]));
+                        cl = Integer.valueOf(values[0]); buffer.putInt(cl);
+                        gl = Integer.valueOf(values[1]); buffer.putInt(gl);
+                        fps = Integer.valueOf(values[2]); buffer.putInt(fps);
+                        ct = Integer.valueOf(values[3]); buffer.putInt(ct);
+                        gt= Integer.valueOf(values[4]); buffer.putInt(gt);
+                        cf= Integer.valueOf(values[5]); buffer.putInt(cf);
+                        gf= Integer.valueOf(values[6]); buffer.putInt(gf);
+
+                        talkToWear(ALL_DATA_PATH, buffer.array());
+
+                        Intent intent = new Intent(MOBILE_DATA_INTENT);
+                        intent.putExtra("CL", cl);
+                        intent.putExtra("GL", gl);
+                        intent.putExtra("FPS", fps);
+                        intent.putExtra("CT", ct);
+                        intent.putExtra("GT", gt);
+                        intent.putExtra("CF", cf);
+                        intent.putExtra("GF", gf);
                         lbm.sendBroadcast(intent);
 
                     }
