@@ -4,8 +4,10 @@ import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
@@ -19,6 +21,7 @@ import com.google.android.gms.wearable.NodeApi;
 import com.google.android.gms.wearable.Wearable;
 
 import java.io.InputStreamReader;
+import java.io.Serializable;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
@@ -103,7 +106,10 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                 .build();
         mGoogleApiClient.connect();
 
-        talkToWear(START_ACTIVITY_PATH, new byte[0]);
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+        if (sharedPref.getBoolean("pref_wear_autostart", false)) {
+            talkToWear(START_ACTIVITY_PATH, new byte[0]);
+        }
 
         new Thread(new TCPClient()).start();
         return super.onStartCommand(intent, flags, startId);
@@ -145,6 +151,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                     //serverMessage = in.readLine();
                     //buf[len] = 0x00;
                     serverMessage = new String(buf, 0, len);
+                    Log.v("TCPClient", serverMessage);
 
 
                     if (serverMessage.startsWith(":")) {
@@ -165,7 +172,7 @@ public class BackgroundService extends Service implements GoogleApiClient.Connec
                         serverMessage = serverMessage.trim();
                         serverMessage = serverMessage.substring(serverMessage.lastIndexOf('\n') + 1);
 
-                        Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
+                        //Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
 
                         talkToWear(ALL_DATA_PATH, serverMessage.getBytes());
 

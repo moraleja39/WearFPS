@@ -8,7 +8,7 @@
         android:key="pref_wear_autostart"
         android:title="@string/pref_wear_autostart"
         android:defaultValue="true" />
-    <CheckBoxPreference
+    <!--<CheckBoxPreference
         android:key="pref_1"
         android:title="@string/pref_wear_autostart"
         android:defaultValue="true" />
@@ -19,6 +19,6 @@
     <CheckBoxPreference
         android:key="pref_3"
         android:title="@string/pref_wear_autostart"
-        android:defaultValue="true" />
+        android:defaultValue="true" />-->
 
 </PreferenceScreen>

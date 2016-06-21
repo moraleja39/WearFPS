@@ -20,6 +20,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -50,6 +51,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
+
+        if (savedInstanceState != null && savedInstanceState.getBoolean("fullscreen", false)) {
+            //setTheme(R.style.AppTheme_NoActionBar);
+            getSupportActionBar().hide();
+        }
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
@@ -413,6 +419,10 @@ public class MainActivity extends AppCompatActivity {
         // Show the system bar
         mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         mVisible = true;
+        ActionBar ab = getSupportActionBar();
+        if (ab != null && !ab.isShowing()) {
+            ab.show();
+        }
 
         mContentView.setOnTouchListener(null);
         coordinatorLayout.setFitsSystemWindows(true);
