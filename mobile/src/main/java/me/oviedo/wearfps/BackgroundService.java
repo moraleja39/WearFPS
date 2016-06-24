@@ -50,6 +50,8 @@ public class BackgroundService extends Service {
     WearCommService.WearBinder wearBinder;
     boolean boundToWearService = false;
 
+    boolean isCleanlyExiting = false;
+
     public BackgroundService() {
     }
 
@@ -60,17 +62,9 @@ public class BackgroundService extends Service {
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
         if (intent.getAction().equals(FINISH_SELF_INTENT)) {
-            if (boundToWearService) {
-                wearBinder.finishActivity();
-                unbindService(mConnection);
-            }
-            //isExiting = true;
-            try {
-                tcpSocket.close();
-            } catch (Exception e) {
-                Log.i("BackgroundService", "Socket already closed.");
-                stopSelf();
-            }
+            isCleanlyExiting = true;
+            cleanup();
+            stopSelf();
             return super.onStartCommand(intent, flags, startId);
         }
 
@@ -161,7 +155,7 @@ public class BackgroundService extends Service {
                     //serverMessage = in.readLine();
                     //buf[len] = 0x00;
                     serverMessage = new String(buf, 0, len);
-                    Log.v("TCPClient", serverMessage);
+                    //Log.v("TCPClient", serverMessage);
 
 
                     if (serverMessage.startsWith(":")) {
@@ -225,19 +219,38 @@ public class BackgroundService extends Service {
             } catch (SocketTimeoutException e) {
                 Log.w("TCPClient", "No se ha podido conectar con el host remoto tras 3500ms");
             } catch (Exception e) {
-                e.printStackTrace();
-            } finally {
+                if (e.getMessage().equalsIgnoreCase("socket closed")) {
+                    Log.i("TCPClient", "TCP socket closed");
+                } else e.printStackTrace();
+            }/* finally {
                 stopSelf();
-            }
+            }*/
 
         }
 
+    }
+
+    private void cleanup() {
+        if (boundToWearService) {
+            wearBinder.finishActivity();
+            unbindService(mConnection);
+        }
+        if (!tcpSocket.isClosed()) {
+            try {
+                tcpSocket.close();
+            } catch (Exception e) {
+                if (e.getMessage().equalsIgnoreCase("socket closed")) {
+                    Log.i("TCPClient", "TCP socket closed");
+                } else e.printStackTrace();
+            }
+        }
     }
 
     @Override
     public void onDestroy() {
         // The service is no longer used and is being destroyed
         running = false;
+        if (!isCleanlyExiting) cleanup();
         Log.i("BackgroundService", "Destroying service...");
     }
 }

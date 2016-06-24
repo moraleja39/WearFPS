@@ -75,7 +75,7 @@ public class WearCommService extends Service implements GoogleApiClient.Connecti
     }
 
     private void talkToWear(final String path, final byte[] msg) {
-        if (!connectedToGAPI) return;
+        if (!connectedToGAPI || nodes == null) return;
         for (Node node : nodes) {
             sendMessage(node.getId(), path, msg);
         }
@@ -130,8 +130,8 @@ public class WearCommService extends Service implements GoogleApiClient.Connecti
 
         @Override
         public void onPeerDisconnected(Node node) {
-            super.onPeerDisconnected(node);
             Log.v(TAG, "Wear node disconnected: " + node.getDisplayName());
+            super.onPeerDisconnected(node);
             findNodes();
         }
     };
