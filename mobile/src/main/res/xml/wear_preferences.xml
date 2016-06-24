@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen android:key="pref_wear_screen"
+    android:persistent="false"
+    android:title="@string/pref_wear_screen"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="pref_wear_autostart"
+        android:title="@string/pref_wear_autostart"
+        android:defaultValue="true" />
+    <!--<CheckBoxPreference
+        android:key="pref_1"
+        android:title="@string/pref_wear_autostart"
+        android:defaultValue="true" />
+    <CheckBoxPreference
+        android:key="pref_2"
+        android:title="@string/pref_wear_autostart"
+        android:defaultValue="true" />
+    <CheckBoxPreference
+        android:key="pref_3"
+        android:title="@string/pref_wear_autostart"
+        android:defaultValue="true" />-->
+
+</PreferenceScreen>

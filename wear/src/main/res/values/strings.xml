@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">WearFPS</string>
-    <string name="hello_world">Hello World!</string>
+    <string name="percent_placeholder">%d%%</string>
+    <string name="celsius_placeholder">%dºC</string>
+    <string name="int_placeholder">$d</string>
 </resources>
