@@ -16,6 +16,7 @@ import android.view.View;
 public class LoadView extends View {
     private int mPercentage = 0;
     private int mBackgroundColor = Color.BLACK;
+    private int mTextColor = Color.BLACK;
 
     private TextPaint mTextPaint;
     private Paint mBarPaint;
@@ -51,6 +52,7 @@ public class LoadView extends View {
         mPercentage = a.getInt(R.styleable.LoadView_percentage, mPercentage);
 
         mBackgroundColor = a.getColor(R.styleable.LoadView_backgroundColor, mBackgroundColor);
+        mTextColor = a.getColor(R.styleable.LoadView_textColor, mTextColor);
 
         a.recycle();
 
@@ -58,7 +60,7 @@ public class LoadView extends View {
         mTextPaint = new TextPaint();
         mTextPaint.setFlags(Paint.ANTI_ALIAS_FLAG);
         mTextPaint.setTextAlign(Paint.Align.LEFT);
-        mTextPaint.setColor(Color.BLACK);
+        //mTextPaint.setColor(Color.BLACK);
         mTextPaint.setTextSize(40);
 
         mBarPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -96,6 +98,7 @@ public class LoadView extends View {
 
     private void invalidateColor() {
         mBarPaint.setColor(mBackgroundColor);
+        mTextPaint.setColor(mTextColor);
     }
 
     @Override
@@ -127,6 +130,13 @@ public class LoadView extends View {
 
     public void setBarColor(int color) {
         mBackgroundColor = color;
+        invalidateColor();
+        requestLayout();
+    }
+
+    public int getTextColor() {return mTextColor;}
+    public void setTextColor(int color) {
+        mTextColor = color;
         invalidateColor();
         requestLayout();
     }

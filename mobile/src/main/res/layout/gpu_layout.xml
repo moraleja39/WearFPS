@@ -57,7 +57,17 @@
             android:layout_height="30dp"
             xmlns:app="http://schemas.android.com/apk/res-auto"
             app:percentage="0"
-            app:backgroundColor="@color/colorPrimary"/>
+            app:backgroundColor="@color/colorPrimary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="30dp"
+            android:text="@string/offline"
+            android:id="@+id/gpuOfflineText"
+            android:gravity="center"
+            android:textSize="20sp"
+            android:textColor="@android:color/holo_red_dark"
+            android:visibility="gone" />
 
     </LinearLayout>
 

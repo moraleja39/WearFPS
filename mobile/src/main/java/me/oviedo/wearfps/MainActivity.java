@@ -22,6 +22,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 import java.io.InterruptedIOException;
@@ -33,18 +34,14 @@ public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fab;
-
-    private BroadcastReceiver mBroadcastReceiver;
-
-    /* Views*/
-    private TextView cpuTempText, gpuTempText, cpuNameText, gpuNameText, cpuFreqText, gpuFreqText;
-    private LoadView cpuLoadView, gpuLoadView;
-
-    private final String sDegCen = "ºC";
+    private FrameLayout fragmentHolder;
 
     private MenuItem disconnectMenuItem;
 
     private View mContentView;
+
+    private static final String MAIN_FRAGMENT_TAG = "MainFragment";
+    private MainFragment mainFragment = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,7 +51,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (savedInstanceState != null && savedInstanceState.getBoolean("fullscreen", false)) {
             //setTheme(R.style.AppTheme_NoActionBar);
-            getSupportActionBar().hide();
+            ActionBar ab = getSupportActionBar();
+            if (ab != null) ab.hide();
         }
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -62,19 +60,24 @@ public class MainActivity extends AppCompatActivity {
 
         findMyViews();
 
-        mVisible = true;
+        if (savedInstanceState == null) {
+            mainFragment = MainFragment.newInstance(false);
+            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentHolder, mainFragment, MAIN_FRAGMENT_TAG).commit();
+            mVisible = true;
+        } else {
+            mainFragment = (MainFragment) getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);
+        }
 
         if (savedInstanceState != null) {
-            cpuNameText.setText(savedInstanceState.getString("cpu"));
-            gpuNameText.setText(savedInstanceState.getString("gpu"));
             if (savedInstanceState.getBoolean("fullscreen", false)) {
+                Log.d("MainActivity", "Saved instance: fullscreen");
                 //getSupportActionBar().hide();
                 hide();
                 //getSupportActionBar().show();
+            } else {
+                Log.d("MainActivity", "Saved instance: normal screen");
             }
         }
-
-        setBroadcastReceiver();
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,13 +90,6 @@ public class MainActivity extends AppCompatActivity {
                 else {
                     requestRemoteIp();
                 }
-                //new Thread(new Udp()).start();
-
-                /*Snackbar.make(view, "L:" + L + ", R: " + R, Snackbar.LENGTH_SHORT)
-                        .setAction("Action", null).show();
-
-                String tmp = L + "-" + R;
-                talkToWear(ALL_DATA_PATH, tmp.getBytes());*/
             }
         });
     }
@@ -101,25 +97,15 @@ public class MainActivity extends AppCompatActivity {
     private void findMyViews() {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
         fab = (FloatingActionButton) findViewById(R.id.fab);
-        cpuTempText = (TextView) findViewById(R.id.cpuTempText);
-        gpuTempText = (TextView) findViewById(R.id.gpuTempText);
-        gpuLoadView = (LoadView) findViewById(R.id.gpuLoadBar);
-        cpuLoadView = (LoadView) findViewById(R.id.cpuLoadBar);
-        cpuNameText = (TextView) findViewById(R.id.cpuNameText);
-        gpuNameText = (TextView) findViewById(R.id.gpuNameText);
-        cpuFreqText = (TextView) findViewById(R.id.cpuCoreText);
-        gpuFreqText = (TextView) findViewById(R.id.gpuCoreText);
-
         //mContentView = findViewById(R.id.main_activity_content);
+        fragmentHolder = (FrameLayout) findViewById(R.id.fragmentHolder);
         mContentView = coordinatorLayout;
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("cpu", cpuNameText.getText().toString());
-        outState.putString("gpu", gpuNameText.getText().toString());
         outState.putBoolean("fullscreen", !mVisible);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -132,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         setFabImage(BackgroundService.running);
-        startBroadcastReceiver();
+        //if (!mVisible) show();
     }
 
     private void setFabImage(boolean running) {
@@ -143,89 +129,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /*@Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        //setRequestedOrientation(newConfig.orientation);
-        //Log.d("MainActivity", "Config changed, orientation: " + newConfig.orientation);
-        //setContentView(R.layout.activity_main);
-        if (mVisible) this.recreate();
-    }*/
-
-    /*private void goAmbient(boolean fullscreen)
-    {
-        View decorView = getWindow().getDecorView();
-        int uiOptions;
-        if (fullscreen) {
-            // Hide the status bar.
-            uiOptions = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
-            // Remember that you should never show the action bar if the
-            // status bar is hidden, so hide that too if necessary.
-            getSupportActionBar().hide();
-            coordinatorLayout.setFitsSystemWindows(false);
-        } else {
-            uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
-            getSupportActionBar().show();
-            coordinatorLayout.setFitsSystemWindows(true);
-        }
-        decorView.setSystemUiVisibility(uiOptions);
-    }*/
-
-    private void setBroadcastReceiver() {
-        mBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
-                if (intent.getAction().equals(BackgroundService.MOBILE_DATA_INTENT)) {
-                    final int CL = intent.getIntExtra("CL", 0);
-                    final int GL = intent.getIntExtra("GL", 0);
-                    final int FPS = intent.getIntExtra("FPS", 0);
-                    final int CT = intent.getIntExtra("CT", 0);
-                    final int GT = intent.getIntExtra("GT", 0);
-                    final int CF = intent.getIntExtra("CF", 0);
-                    final int GF = intent.getIntExtra("GF", 0);
-
-                    cpuLoadView.setPercentage(CL);
-                    gpuLoadView.setPercentage(GL);
-                    //fpsText.setText(String.format("%.0f", FPS));
-                    cpuTempText.setText(CT + sDegCen);
-                    gpuTempText.setText(GT + sDegCen);
-                    cpuFreqText.setText(CF + "MHz");
-                    gpuFreqText.setText(GF + "MHz");
-
-                } else if (intent.getAction().equals(BackgroundService.MOBILE_INFO_INTENT)) {
-                    if (intent.hasExtra("cpu")) {
-                        cpuNameText.setText(intent.getStringExtra("cpu"));
-                    }
-                    if (intent.hasExtra("gpu")) {
-                        gpuNameText.setText(intent.getStringExtra("gpu"));
-                    }
-                }
-
-            }
-        };
-    }
-
-    private void startBroadcastReceiver() {
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(BackgroundService.MOBILE_DATA_INTENT);
-        filter.addAction(BackgroundService.MOBILE_INFO_INTENT);
-        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
-    }
-
-    private void stopBroadcastReceiver() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
-        stopBroadcastReceiver();
     }
 
     @Override
@@ -272,7 +178,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private AsyncTask<Void, Void, Void> async_cient;
-    private String Message = "IP_REQ";
+    private static final String Message = "IP_REQ";
     private final int UDP_PORT = 55632;
     private String ipadd;
     DatagramSocket ds = null;
@@ -329,7 +235,6 @@ public class MainActivity extends AppCompatActivity {
                     startService(intent);
                     setFabImage(true);
                     disconnectMenuItem.setVisible(true);
-                } else {
                 }
             }
         };
@@ -339,19 +244,22 @@ public class MainActivity extends AppCompatActivity {
 
 
     /* Fullscreen */
-    private final Handler mHideHandler = new Handler();
-    private static final int UI_ANIMATION_DELAY = 300;
-    private boolean mVisible;
-    private final int fullscreenDecorFlags = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
+    //private final Handler mHideHandler = new Handler();
+    //private static final int UI_ANIMATION_DELAY = 300;
+    private boolean mVisible = true;
+    private static final int fullscreenDecorFlags = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
 
     private void hide() {
-        mContentView.setOnTouchListener(mTouchListener);
+        mContentView.setOnClickListener(mClickListener);
 
         mVisible = false;
         coordinatorLayout.setFitsSystemWindows(false);
         //mContentView.setFitsSystemWindows(false);
         mContentView.setSystemUiVisibility(fullscreenDecorFlags);
+        fab.setVisibility(View.GONE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //mainFragment.setAmbientMode(true);
     }
 
     private void show() {
@@ -363,15 +271,20 @@ public class MainActivity extends AppCompatActivity {
             ab.show();
         }
 
-        mContentView.setOnTouchListener(null);
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
+        //this.onto
+        fab.setVisibility(View.VISIBLE);
+        //mainFragment.setAmbientMode(false);
+
+        mContentView.setOnClickListener(null);
         coordinatorLayout.setFitsSystemWindows(true);
     }
 
-    private final View.OnTouchListener mTouchListener = new View.OnTouchListener() {
+    private final View.OnClickListener mClickListener = new View.OnClickListener() {
         @Override
-        public boolean onTouch(View v, MotionEvent event) {
+        public void onClick(View v) {
             show();
-            return false;
         }
     };
 

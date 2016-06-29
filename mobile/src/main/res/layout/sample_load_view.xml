@@ -7,6 +7,7 @@
         android:layout_width="match_parent"
         android:layout_height="26dp"
         app:backgroundColor="@color/colorAccent"
+        app:textColor="@android:color/primary_text_light"
         app:percentage="50" />
 
 </FrameLayout>
