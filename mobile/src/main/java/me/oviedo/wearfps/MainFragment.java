@@ -162,6 +162,7 @@ public class MainFragment extends Fragment {
                         if (isGpuOffline) {
                             gpuLoadView.setVisibility(View.VISIBLE);
                             gpuOfflineText.setVisibility(View.GONE);
+                            isGpuOffline = false;
                         }
                         gpuLoadView.setPercentage(GL);
                     }

@@ -119,6 +119,9 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         setFabImage(BackgroundService.running);
         //if (!mVisible) show();
+
+        UpdateChecker.check(this);
+
     }
 
     private void setFabImage(boolean running) {
@@ -133,6 +136,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
     }
+
+    /*@Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("MainActivity", "Destroying...");
+        UpdateChecker.reset();
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
