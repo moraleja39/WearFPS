@@ -8,7 +8,6 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="me.oviedo.wearfps.MainActivity"
-    android:background="?android:colorBackground"
     android:orientation="vertical"
     android:elevation="0dp">
 
@@ -18,7 +17,8 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
-        android:elevation="8dp"
+        android:background="?android:colorBackground"
+        android:elevation="2dp"
         android:layout_marginTop="@dimen/activity_vertical_margin">
 
         <include layout="@layout/cpu_layout" />
@@ -32,6 +32,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="0dp"
         android:layout_marginRight="0dp"
+        android:background="?android:colorBackground"
         android:elevation="2dp"
         android:layout_marginTop="@dimen/activity_vertical_margin">
 

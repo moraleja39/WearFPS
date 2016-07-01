@@ -1,5 +1,6 @@
 package me.oviedo.wearfps;
 
+import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -23,6 +24,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.io.InterruptedIOException;
@@ -34,14 +36,27 @@ public class MainActivity extends AppCompatActivity {
 
     private CoordinatorLayout coordinatorLayout;
     private FloatingActionButton fab;
-    private FrameLayout fragmentHolder;
+    //private FrameLayout fragmentHolder;
+
+    private static final String TAG = "MainActivity";
 
     private MenuItem disconnectMenuItem;
 
     private View mContentView;
 
-    private static final String MAIN_FRAGMENT_TAG = "MainFragment";
-    private MainFragment mainFragment = null;
+    private String sDegs, sMhz;
+
+    /* Views*/
+    private TextView cpuTempText, gpuTempText, cpuNameText, gpuNameText, cpuFreqText, gpuFreqText, gpuOfflineText;
+    private LoadView cpuLoadView, gpuLoadView;
+
+    private BroadcastReceiver mBroadcastReceiver;
+
+    //private static final String MAIN_FRAGMENT_TAG = "MainFragment";
+    //private static final String WELCOME_FRAGMENT_TAG = "WelcomeFragment";
+    //private MainFragment mainFragment = null;
+
+    //private boolean isSavedInstance = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,14 +76,22 @@ public class MainActivity extends AppCompatActivity {
         findMyViews();
 
         if (savedInstanceState == null) {
-            mainFragment = MainFragment.newInstance(false);
-            getSupportFragmentManager().beginTransaction().replace(R.id.fragmentHolder, mainFragment, MAIN_FRAGMENT_TAG).commit();
             mVisible = true;
-        } else {
+            //fab.setVisibility(View.GONE);
+        }/* else {
             mainFragment = (MainFragment) getSupportFragmentManager().findFragmentByTag(MAIN_FRAGMENT_TAG);
-        }
+            welcomeFragment = (WelcomeFragment) getSupportFragmentManager().findFragmentByTag(WELCOME_FRAGMENT_TAG);
+            isSavedInstance = true;
+
+            if (welcomeFragment!= null && ipadd != null) {
+                welcomeFragment.setReady();
+                fab.setVisibility(View.VISIBLE);
+            }
+        }*/
 
         if (savedInstanceState != null) {
+            cpuNameText.setText(savedInstanceState.getString("cpu"));
+            gpuNameText.setText(savedInstanceState.getString("gpu"));
             if (savedInstanceState.getBoolean("fullscreen", false)) {
                 Log.d("MainActivity", "Saved instance: fullscreen");
                 //getSupportActionBar().hide();
@@ -79,6 +102,9 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        loadResources();
+        setBroadcastReceiver();
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -88,7 +114,8 @@ public class MainActivity extends AppCompatActivity {
 
                 }
                 else {
-                    requestRemoteIp();
+                    //requestRemoteIp();
+                    Log.w(TAG, "Fullscreen button presed, but BackgroundService is not running");
                 }
             }
         });
@@ -98,13 +125,30 @@ public class MainActivity extends AppCompatActivity {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         //mContentView = findViewById(R.id.main_activity_content);
-        fragmentHolder = (FrameLayout) findViewById(R.id.fragmentHolder);
+        //fragmentHolder = (FrameLayout) findViewById(R.id.fragmentHolder);
         mContentView = coordinatorLayout;
+
+        cpuTempText = (TextView) findViewById(R.id.cpuTempText);
+        gpuTempText = (TextView) findViewById(R.id.gpuTempText);
+        gpuLoadView = (LoadView) findViewById(R.id.gpuLoadBar);
+        cpuLoadView = (LoadView) findViewById(R.id.cpuLoadBar);
+        cpuNameText = (TextView) findViewById(R.id.cpuNameText);
+        gpuNameText = (TextView) findViewById(R.id.gpuNameText);
+        cpuFreqText = (TextView) findViewById(R.id.cpuCoreText);
+        gpuFreqText = (TextView) findViewById(R.id.gpuCoreText);
+        gpuOfflineText = (TextView) findViewById(R.id.gpuOfflineText);
+    }
+
+    private void loadResources() {
+        sDegs = getString(R.string.placeholder_celsius);
+        sMhz = getString(R.string.placeholder_megahertz);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         outState.putBoolean("fullscreen", !mVisible);
+        outState.putString("cpu", cpuNameText.getText().toString());
+        outState.putString("gpu", gpuNameText.getText().toString());
         super.onSaveInstanceState(outState);
     }
 
@@ -117,24 +161,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        setFabImage(BackgroundService.running);
+        startBroadcastReceiver();
         //if (!mVisible) show();
-
-        UpdateChecker.check(this);
-
-    }
-
-    private void setFabImage(boolean running) {
-        if (running) {
-            fab.setImageResource(R.drawable.ic_fullscreen_24dp);
-        } else {
-            fab.setImageResource(android.R.drawable.ic_media_play);
-        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        stopBroadcastReceiver();
     }
 
     /*@Override
@@ -143,6 +177,12 @@ public class MainActivity extends AppCompatActivity {
         Log.d("MainActivity", "Destroying...");
         UpdateChecker.reset();
     }*/
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+        Log.e("MainActivity", "onAttachFragment");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -176,80 +216,87 @@ public class MainActivity extends AppCompatActivity {
             startActivity(i);
 
         } else if (id == R.id.action_stop_server) {
-            Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
+            // Stop BackgroundServer
+            Intent intent = new Intent(this, BackgroundService.class);
             intent.setAction(BackgroundService.FINISH_SELF_INTENT);
             startService(intent);
-            setFabImage(false);
+
+            // This may not be necessary
             disconnectMenuItem.setVisible(false);
+
+            // Launch the start activity
+            intent = new Intent(this, LaunchActivity.class);
+            startActivity(intent);
+            overridePendingTransition(0, R.anim.nice_fade_out);
+
+            //Finally, close the activity
+            finish();
         }
 
         return super.onOptionsItemSelected(item);
     }
 
 
-    private AsyncTask<Void, Void, Void> async_cient;
-    private static final String Message = "IP_REQ";
-    private final int UDP_PORT = 55632;
-    private String ipadd;
-    DatagramSocket ds = null;
-
-
-    public void requestRemoteIp() {
-        async_cient = new AsyncTask<Void, Void, Void>() {
+    private boolean isGpuOffline = false;
+    private void setBroadcastReceiver() {
+        mBroadcastReceiver = new BroadcastReceiver() {
             @Override
-            protected Void doInBackground(Void... params) {
-                try {
-                    Log.d("RequestIP", "Sending request packet...");
-                    if (ds == null) ds = new DatagramSocket();
-                    InetAddress addr = InetAddress.getByName("255.255.255.255");
-                    DatagramPacket dp = new DatagramPacket(Message.getBytes(), Message.length(), addr, UDP_PORT);
-                    ds.setBroadcast(true);
-                    ds.send(dp);
+            public void onReceive(Context context, Intent intent) {
+                //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
+                if (intent.getAction().equals(BackgroundService.MOBILE_DATA_INTENT)) {
+                    final int CL = intent.getIntExtra("CL", 0);
+                    final int GL = intent.getIntExtra("GL", 0);
+                    final int FPS = intent.getIntExtra("FPS", 0);
+                    final int CT = intent.getIntExtra("CT", 0);
+                    final int GT = intent.getIntExtra("GT", 0);
+                    final int CF = intent.getIntExtra("CF", 0);
+                    final int GF = intent.getIntExtra("GF", 0);
 
-                    Log.d("RequestIP", "Listening for response...");
-                    byte[] lMsg = new byte[4096];
-                    dp = new DatagramPacket(lMsg, lMsg.length);
-                    ds.setSoTimeout(4000);
-                    ds.receive(dp);
-                    ipadd = new String(lMsg, 0, dp.getLength());
-                    Log.i("RequestIP", "Server address: " + ipadd);
+                    cpuLoadView.setPercentage(CL);
+                    if (GL < 0) {
+                        if (!isGpuOffline) {
+                            isGpuOffline = true;
+                            gpuLoadView.setVisibility(View.GONE);
+                            gpuOfflineText.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        if (isGpuOffline) {
+                            gpuLoadView.setVisibility(View.VISIBLE);
+                            gpuOfflineText.setVisibility(View.GONE);
+                            isGpuOffline = false;
+                        }
+                        gpuLoadView.setPercentage(GL);
+                    }
+                    //fpsText.setText(String.format("%.0f", FPS));
+                    cpuTempText.setText(String.format(sDegs, CT));
+                    if (GT < 0 ) gpuTempText.setText("---");
+                    else gpuTempText.setText(String.format(sDegs, GT));
+                    cpuFreqText.setText(String.format(sMhz, CF));
+                    if (GF < 0) gpuFreqText.setText("---");
+                    else gpuFreqText.setText(String.format(sMhz, GF));
 
-                    Log.d("RequestIP", "Finished!");
-
-                } catch (InterruptedIOException e) {
-                    Log.w("RequestIP", "The remote server did not answer. Maybe it is not started?");
-                    ipadd = null;
-
-                } catch (Exception e) {
-                    Log.e("RequestIP", "Exception");
-                    e.printStackTrace();
-                    ipadd = null;
-                } finally {
-                    if (ds != null) {
-                        ds.close();
-                        ds = null;
+                } else if (intent.getAction().equals(BackgroundService.MOBILE_INFO_INTENT)) {
+                    if (intent.hasExtra("cpu")) {
+                        cpuNameText.setText(intent.getStringExtra("cpu"));
+                    }
+                    if (intent.hasExtra("gpu")) {
+                        gpuNameText.setText(intent.getStringExtra("gpu"));
                     }
                 }
-                return null;
-            }
 
-
-
-            protected void onPostExecute(Void result) {
-                super.onPostExecute(result);
-                if (ipadd != null) {
-
-                    Intent intent = new Intent(getApplicationContext(), BackgroundService.class);
-                    intent.setAction(BackgroundService.START_INTENT_ACTION);
-                    intent.putExtra(BackgroundService.IP_EXTRA, ipadd);
-                    startService(intent);
-                    setFabImage(true);
-                    disconnectMenuItem.setVisible(true);
-                }
             }
         };
+    }
 
-        async_cient.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    private void startBroadcastReceiver() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BackgroundService.MOBILE_DATA_INTENT);
+        filter.addAction(BackgroundService.MOBILE_INFO_INTENT);
+        LocalBroadcastManager.getInstance(this).registerReceiver(mBroadcastReceiver, filter);
+    }
+
+    private void stopBroadcastReceiver() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mBroadcastReceiver);
     }
 
 

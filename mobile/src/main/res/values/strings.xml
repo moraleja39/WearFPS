@@ -21,4 +21,9 @@
 
     <string name="placeholder_celsius">%dºC</string>
     <string name="placeholder_megahertz">%dMHz</string>
+
+    <string name="finding_server">Buscando el servidor&#8230;</string>
+    <string name="server_not_found">Servidor no encontrado :(</string>
+    <string name="server_ready">Listo para la conexión</string>
+    <string name="retry">Reintentar</string>
 </resources>
