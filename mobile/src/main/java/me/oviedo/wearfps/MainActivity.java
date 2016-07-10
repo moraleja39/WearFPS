@@ -1,21 +1,32 @@
 package me.oviedo.wearfps;
 
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.transition.Fade;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,6 +34,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -31,6 +44,8 @@ import java.io.InterruptedIOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -42,13 +57,17 @@ public class MainActivity extends AppCompatActivity {
 
     private MenuItem disconnectMenuItem;
 
-    private View mContentView;
+    private Toolbar mToolbar;
+
+    private LinearLayout mContentView;
+    private View mCircle;
 
     private String sDegs, sMhz;
 
     /* Views*/
     private TextView cpuTempText, gpuTempText, cpuNameText, gpuNameText, cpuFreqText, gpuFreqText, gpuOfflineText;
     private LoadView cpuLoadView, gpuLoadView;
+    private List<View> contentViews = new ArrayList<>();
 
     private BroadcastReceiver mBroadcastReceiver;
 
@@ -58,22 +77,51 @@ public class MainActivity extends AppCompatActivity {
 
     //private boolean isSavedInstance = false;
 
+    private boolean shouldFinish = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /*if (getIntent().getBooleanExtra("shouldBeTranslucent", false)) {
+            Log.e(TAG, "Translucent");
+            getIntent().putExtra("shouldBeTranslucent", false);
+            setTheme(R.style.AppTheme_Main_Translucent);
+            super.setTheme(R.style.AppTheme_Main_Translucent);
+        } else {
+            setTheme(R.style.AppTheme_NoActionBar);
+            super.setTheme(R.style.AppTheme_NoActionBar);
+        }*/
+
+        //getWindow().setBackgroundDrawable(new ColorDrawable(ContextCompat.getColor(this, R.color.translucent)));
+
         super.onCreate(savedInstanceState);
 
-        setContentView(R.layout.activity_main);
+        /*if (Build.VERSION.SDK_INT >= 21) {
+            getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+        }*/
 
-        if (savedInstanceState != null && savedInstanceState.getBoolean("fullscreen", false)) {
+        setContentView(R.layout.activity_main);
+        findMyViews();
+
+        setSupportActionBar(mToolbar);
+
+        Log.i(TAG, "sysuivisivility:" + coordinatorLayout.getSystemUiVisibility());
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            //mContentView.setVisibility(View.INVISIBLE);
+            //fab.setVisibility(View.INVISIBLE);
+            getWindow().setTransitionBackgroundFadeDuration(2500);
+            setupEnterAnimation();
+            if (savedInstanceState == null) mCircle.setVisibility(View.VISIBLE);
+        }
+
+        /*if (savedInstanceState != null && savedInstanceState.getBoolean("fullscreen", false)) {
             //setTheme(R.style.AppTheme_NoActionBar);
             ActionBar ab = getSupportActionBar();
             if (ab != null) ab.hide();
-        }
+        }*/
 
         /*Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);*/
-
-        findMyViews();
 
         if (savedInstanceState == null) {
             mVisible = true;
@@ -122,11 +170,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void findMyViews() {
+        mToolbar = (Toolbar) findViewById(R.id.toolbar);
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator);
         fab = (FloatingActionButton) findViewById(R.id.fab);
         //mContentView = findViewById(R.id.main_activity_content);
         //fragmentHolder = (FrameLayout) findViewById(R.id.fragmentHolder);
-        mContentView = coordinatorLayout;
+        mContentView = (LinearLayout) findViewById(R.id.main_content);
+        for (int i = 0; i < mContentView.getChildCount(); i++) {
+            contentViews.add(mContentView.getChildAt(i));
+        }
+        mCircle = findViewById(R.id.middle_cirlce);
 
         cpuTempText = (TextView) findViewById(R.id.cpuTempText);
         gpuTempText = (TextView) findViewById(R.id.gpuTempText);
@@ -154,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (BackgroundService.running) moveTaskToBack(false);
+        if (BackgroundService.running) moveTaskToBack(true);
         else super.onBackPressed();
     }
 
@@ -169,6 +222,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         stopBroadcastReceiver();
+        if (shouldFinish) finish();
     }
 
     /*@Override
@@ -178,11 +232,11 @@ public class MainActivity extends AppCompatActivity {
         UpdateChecker.reset();
     }*/
 
-    @Override
+    /*@Override
     public void onAttachFragment(Fragment fragment) {
         super.onAttachFragment(fragment);
         Log.e("MainActivity", "onAttachFragment");
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -225,12 +279,33 @@ public class MainActivity extends AppCompatActivity {
             disconnectMenuItem.setVisible(false);
 
             // Launch the start activity
-            intent = new Intent(this, LaunchActivity.class);
-            startActivity(intent);
-            overridePendingTransition(0, R.anim.nice_fade_out);
+            final Intent i = new Intent(this, LaunchActivity.class);
+            //if (Build.VERSION.SDK_INT < 21) {
+            if (true) {
+                startActivity(i);
+                overridePendingTransition(0, R.anim.nice_fade_out);
+                //Finally, close the activity
+                finish();
 
-            //Finally, close the activity
-            finish();
+            } else {
+                GUIUtils.animateRevealHide(this, mContentView, R.color.lightGrey, mCircle.getWidth() / 2,
+                    new OnRevealAnimationListener() {
+                        @Override
+                        public void onRevealHide() {
+                            /*ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(MainActivity.this, Pair.create(mCircle, "fab_transition"));
+                            //options.update(ActivityOptionsCompat.makeSceneTransitionAnimation(this));
+                            ActivityCompat.startActivity(MainActivity.this, i, options.toBundle());
+                            shouldFinish = true;*/
+                            finish();
+                        }
+
+                        @Override
+                        public void onRevealShow() {
+
+                        }
+                    });
+            }
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -300,20 +375,126 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    @TargetApi(21)
+    private void setupEnterAnimation() {
+        Transition shared = TransitionInflater.from(this).inflateTransition(R.transition.changebounds_arcmotion);
+        shared.setDuration(300);
+        getWindow().setSharedElementEnterTransition(shared);
+
+        //getWindow().setEnterTransition(null);
+
+        Transition fade = TransitionInflater.from(this).inflateTransition(R.transition.fade);
+        //Transition fade = new Fade();
+        fade.setDuration(300);
+        getWindow().setEnterTransition(fade);
+
+        shared.addListener(new Transition.TransitionListener() {
+            @Override
+            public void onTransitionStart(Transition transition) {
+
+                //getWindow().translucent
+
+                mContentView.setVisibility(View.INVISIBLE);
+                for (View v : contentViews) {
+                    v.setVisibility(View.INVISIBLE);
+                }
+                fab.setVisibility(View.INVISIBLE);
+            }
+
+            @Override
+            public void onTransitionEnd(Transition transition) {
+                Handler h = new Handler();
+                h.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        mCircle.setVisibility(View.GONE);
+                    }
+                });
+                transition.removeListener(this);
+                Animation animation = AnimationUtils.loadAnimation(getApplicationContext(), android.R.anim.fade_in);
+                animation.setDuration(350);
+                for (View v : contentViews) {
+                    v.startAnimation(animation);
+                    v.setVisibility(View.VISIBLE);
+                }
+                animateRevealShow(mContentView);
+
+            }
+
+            @Override
+            public void onTransitionCancel(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionPause(Transition transition) {
+
+            }
+
+            @Override
+            public void onTransitionResume(Transition transition) {
+
+            }
+        });
+    }
+
+    @TargetApi(21)
+    private void animateRevealShow(final View viewRoot) {
+        //int cx = (viewRoot.getLeft() + viewRoot.getRight()) / 2;
+        int cx = (viewRoot.getWidth()) / 2;
+        //int cy = (viewRoot.getTop() + viewRoot.getBottom()) / 2;
+        int cy = (viewRoot.getHeight()) / 2;
+        GUIUtils.animateRevealShow(this, viewRoot, mCircle.getWidth() / 2, R.color.lightGrey, cx, cy, new OnRevealAnimationListener() {
+                    @Override
+                    public void onRevealHide() {
+
+                    }
+
+                    @Override
+                    public void onRevealShow() {
+                        initViews();
+                    }
+                });
+    }
+
+    @TargetApi(21)
+    private void initViews() {
+        new Handler(Looper.getMainLooper()).post(new Runnable() {
+         @Override
+         public void run() {
+             fab.show();
+             mCircle.setVisibility(View.GONE);
+             //mContentView.startAnimation(animation);
+             //mIvClose.startAnimation(animation);
+             //mContentView.setVisibility(View.VISIBLE);
+             //mIvClose.setVisibility(View.VISIBLE);
+         }
+     }
+        );
+    }
+
+    public interface OnRevealAnimationListener {
+        void onRevealHide();
+        void onRevealShow();
+    }
+
+
     /* Fullscreen */
     //private final Handler mHideHandler = new Handler();
     //private static final int UI_ANIMATION_DELAY = 300;
     private boolean mVisible = true;
     private static final int fullscreenDecorFlags = View.SYSTEM_UI_FLAG_LOW_PROFILE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
-
+    //private static final int fullscreenDecorFlags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY /*| View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION*/ | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION;
 
     private void hide() {
-        mContentView.setOnClickListener(mClickListener);
+        coordinatorLayout.setOnTouchListener(mClickListener);
 
         mVisible = false;
-        coordinatorLayout.setFitsSystemWindows(false);
+        //coordinatorLayout.setFitsSystemWindows(false);
         //mContentView.setFitsSystemWindows(false);
-        mContentView.setSystemUiVisibility(fullscreenDecorFlags);
+        coordinatorLayout.setSystemUiVisibility(fullscreenDecorFlags);
+        getSupportActionBar().hide();
+        //getWindow().getDecorView().setSystemUiVisibility(fullscreenDecorFlags);
         fab.setVisibility(View.GONE);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         //mainFragment.setAmbientMode(true);
@@ -321,12 +502,18 @@ public class MainActivity extends AppCompatActivity {
 
     private void show() {
         // Show the system bar
-        mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+
+        //coordinatorLayout.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
+        //getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
         mVisible = true;
         ActionBar ab = getSupportActionBar();
         if (ab != null && !ab.isShowing()) {
             ab.show();
         }
+
+        coordinatorLayout.setSystemUiVisibility(0);
+        //coordinatorLayout.requestLayout();
+
 
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -334,14 +521,16 @@ public class MainActivity extends AppCompatActivity {
         fab.setVisibility(View.VISIBLE);
         //mainFragment.setAmbientMode(false);
 
-        mContentView.setOnClickListener(null);
-        coordinatorLayout.setFitsSystemWindows(true);
+        coordinatorLayout.setOnTouchListener(null);
+        //coordinatorLayout.setFitsSystemWindows(true);
     }
 
-    private final View.OnClickListener mClickListener = new View.OnClickListener() {
+    private final View.OnTouchListener mClickListener = new View.OnTouchListener() {
         @Override
-        public void onClick(View v) {
+        public boolean onTouch(View v, MotionEvent motionEvent) {
+            Log.d(TAG, "click");
             show();
+            return false;
         }
     };
 

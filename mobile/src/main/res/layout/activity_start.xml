@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    android:id="@+id/start_root"
     tools:context="me.oviedo.wearfps.StartActivity">
 
     <RelativeLayout
@@ -63,9 +65,11 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:soundEffectsEnabled="true"
+        android:soundEffectsEnabled="false"
+        app:rippleColor="@color/translucent"
+        android:transitionName="fab_transition"
         android:src="@android:drawable/ic_media_play"
-        android:visibility="visible"
+        android:visibility="gone"
         xmlns:app="http://schemas.android.com/apk/res-auto"
         app:backgroundTint="@color/lightGrey" />
 

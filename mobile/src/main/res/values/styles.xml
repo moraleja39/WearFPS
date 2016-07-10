@@ -15,24 +15,15 @@
         <item name="colorPrimaryDark">@color/primaryGreyDark</item>
         <item name="colorAccent">@color/accentGrey</item>
 
-        <item name="android:windowBackground">@color/lightGrey</item>
-    </style>
-
-    <style name="AppTheme.Main.Background">
-        <item name="android:colorBackground">@color/lightGrey</item>
-    </style>
-
-    <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
 
-        <!--<item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
-        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>-->
+        <!--<item name="android:windowBackground">@android:color/background_light</item>-->
+    </style>
 
-        <!--<item name="android:statusBarColor">@android:color/transparent</item>-->
+    <style name="AppTheme.Main.Translucent">
+        <item name="android:windowBackground">@color/translucent</item>
+        <item name="android:windowIsTranslucent">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar.Settings" parent="Theme.AppCompat.NoActionBar">

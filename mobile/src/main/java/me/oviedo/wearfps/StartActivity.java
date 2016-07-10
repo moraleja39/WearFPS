@@ -1,15 +1,25 @@
 package me.oviedo.wearfps;
 
+import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.transition.Explode;
+import android.transition.Transition;
+import android.transition.TransitionInflater;
 import android.util.Log;
+import android.support.v4.util.Pair;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -25,10 +35,18 @@ public class StartActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Button retryButton;
     private FloatingActionButton fab;
+    private CoordinatorLayout root;
+
+    private boolean shouldFinish = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        /*if (Build.VERSION.SDK_INT >= 21) {
+            getWindow().requestFeature(Window.FEATURE_ACTIVITY_TRANSITIONS);
+            if (getWindow().hasFeature(Window.FEATURE_CONTENT_TRANSITIONS)) Log.e("StartActivity", "CONTENT_TRANSITIONS");
+        }*/
+
         setContentView(R.layout.activity_start);
         findViews();
         progressBar.getIndeterminateDrawable().setColorFilter(ContextCompat.getColor(this, R.color.settingsPrimary), android.graphics.PorterDuff.Mode.SRC_IN);
@@ -52,6 +70,13 @@ public class StartActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         requestRemoteIp();
+        UpdateChecker.check(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        if (shouldFinish) finish();
     }
 
     @Override
@@ -77,12 +102,14 @@ public class StartActivity extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.connectProgressbar);
         retryButton = (Button) findViewById(R.id.retryConnectButton);
         fab = (FloatingActionButton) findViewById(R.id.start_fab);
+        root = (CoordinatorLayout) findViewById(R.id.start_root);
     }
 
     private void setFindingServer() {
         statusText.setText(getText(R.string.finding_server));
         retryButton.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
+        fab.hide();
     }
 
     private void setError() {
@@ -95,6 +122,7 @@ public class StartActivity extends AppCompatActivity {
         statusText.setText(getText(R.string.server_ready));
         retryButton.setVisibility(View.GONE);
         progressBar.setVisibility(View.GONE);
+        fab.show();
     }
 
 
@@ -149,7 +177,6 @@ public class StartActivity extends AppCompatActivity {
                 super.onPostExecute(result);
                 if (ipadd != null) {
                     setReady();
-                    fab.show();
                 } else {
                     setError();
                 }
@@ -166,11 +193,23 @@ public class StartActivity extends AppCompatActivity {
 
         //Then start MainActivity
         intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        overridePendingTransition(0, R.anim.nice_fade_out);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            intent.putExtra("shouldBeTranslucent", true);
+            //getWindow().setExitTransition(null);
+            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, Pair.create((View)fab, "fab_transition"));
+            //options.update(ActivityOptionsCompat.makeSceneTransitionAnimation(this));
+            ActivityCompat.startActivity(this, intent, options.toBundle());
+            //overridePendingTransition(0, R.anim.nice_fade_out);
+            shouldFinish = true;
+            //finish();
+        } else {
+            startActivity(intent);
+            overridePendingTransition(0, R.anim.nice_fade_out);
+            finish();
+        }
 
         //Finally, finish this activity
-        finish();
+        //finish();
 
         //disconnectMenuItem.setVisible(true);
         //getSupportFragmentManager().beginTransaction().replace(R.id.fragmentHolder, mainFragment, MAIN_FRAGMENT_TAG).commit();

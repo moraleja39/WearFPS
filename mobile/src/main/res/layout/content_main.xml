@@ -1,58 +1,77 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<RelativeLayout android:layout_height="match_parent"
+    android:layout_width="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:card_view="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/main_content"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="me.oviedo.wearfps.MainActivity"
-    android:orientation="vertical"
-    android:elevation="0dp">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <FrameLayout
+    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/main_content"
         android:layout_width="match_parent"
-        android:layout_gravity="center"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:background="?android:colorBackground"
-        android:elevation="2dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin">
+        android:layout_height="match_parent"
 
-        <include layout="@layout/cpu_layout" />
+        android:orientation="vertical"
+        android:elevation="0dp"
+        android:background="@color/lightGrey">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:background="?android:colorBackground"
+            android:elevation="2dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin">
+
+            <include layout="@layout/cpu_layout" />
+
+        </FrameLayout>
+
+        <FrameLayout
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:background="?android:colorBackground"
+            android:elevation="2dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin">
+
+            <include layout="@layout/gpu_layout" />
+
+        </FrameLayout>
+
+        <!--<android.support.v7.widget.CardView
+            xmlns:card_view="http://schemas.android.com/apk/res-auto"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            card_view:cardCornerRadius="0dp"
+            android:layout_marginLeft="0dp"
+            android:layout_marginRight="0dp"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            card_view:cardElevation="2dp"
+            android:clickable="true"
+            android:foreground="?android:attr/selectableItemBackground">
+
+        </android.support.v7.widget.CardView>-->
+
+    </LinearLayout>
+
+    <FrameLayout android:id="@+id/middle_cirlce"
+        android:layout_height="56dp"
+        android:layout_width="56dp"
+        android:background="@drawable/plain_circle"
+        android:layout_centerInParent="true"
+        android:transitionName="fab_transition"
+        android:visibility="gone">
 
     </FrameLayout>
 
-    <FrameLayout
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_gravity="center"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:background="?android:colorBackground"
-        android:elevation="2dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin">
-
-        <include layout="@layout/gpu_layout" />
-
-    </FrameLayout>
-
-    <!--<android.support.v7.widget.CardView
-        xmlns:card_view="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_gravity="center"
-        card_view:cardCornerRadius="0dp"
-        android:layout_marginLeft="0dp"
-        android:layout_marginRight="0dp"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        card_view:cardElevation="2dp"
-        android:clickable="true"
-        android:foreground="?android:attr/selectableItemBackground">
-
-    </android.support.v7.widget.CardView>-->
-
-</LinearLayout>
+</RelativeLayout>

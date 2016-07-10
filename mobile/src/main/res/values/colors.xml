@@ -15,5 +15,7 @@
 
     <color name="black_overlay">#66000000</color>
 
+    <color name="translucent">#00000000</color>
+
     <color name="welcome_background">#558b2f</color>
 </resources>

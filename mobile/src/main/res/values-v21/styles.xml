@@ -4,12 +4,37 @@
         <item name="colorPrimary">@color/settingsPrimary</item>
         <item name="colorPrimaryDark">@color/settingsPrimaryDark</item>
         <item name="colorAccent">@color/colorPrimary</item>
+
+        <item name="android:windowContentTransitions">true</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+
         <!--<item name="android:statusBarColor">@android:color/transparent</item>-->
     </style>
+
+    <style name="AppTheme.Main">
+        <item name="colorPrimary">@color/primaryGrey</item>
+        <item name="colorPrimaryDark">@color/primaryGreyDark</item>
+        <item name="colorAccent">@color/accentGrey</item>
+
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+
+        <!--<item name="android:windowContentTransitions">true</item>-->
+
+        <!--<item name="android:windowBackground">@color/transparent</item>
+        <item name="android:windowIsTranslucent">true</item>-->
+        <!--<item name="android:windowBackground">@android:color/background_light</item>-->
+    </style>
+
+    <style name="AppTheme.Main.Translucent">
+        <item name="android:windowBackground">@color/translucent</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
+
 </resources>

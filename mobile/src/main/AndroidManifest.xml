@@ -12,10 +12,11 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:launchMode="singleTop"
+            android:screenOrientation="user"
             android:theme="@style/AppTheme.Main">
             <!--<intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -46,10 +47,13 @@
 
         <activity
             android:name=".StartActivity"
+            android:screenOrientation="user"
+            android:launchMode="singleTop"
             android:label="@string/app_name"
             android:theme="@style/AppTheme" />
 
         <activity android:name=".LaunchActivity"
+            android:launchMode="singleTop"
             android:label="@string/app_name"
             android:theme="@android:style/Theme.NoDisplay">
             <intent-filter>

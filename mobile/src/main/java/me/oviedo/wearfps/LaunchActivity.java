@@ -23,6 +23,5 @@ public class LaunchActivity extends Activity {
     @Override
     protected void onStart() {
         super.onStart();
-        UpdateChecker.check(this);
     }
 }
