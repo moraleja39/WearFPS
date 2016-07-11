@@ -14,6 +14,8 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -21,8 +23,11 @@ import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class BackgroundService extends Service {
+
+    private static final String TAG = "BackgroundService";
 
     public static final String IP_EXTRA = "IP";
 
@@ -124,8 +129,10 @@ public class BackgroundService extends Service {
 
     class TCPClient implements Runnable {
 
-        char[] buf = new char[256];
-        String serverMessage;
+        //char[] buf = new char[256];
+        byte[] buf = new byte[512];
+        int type;
+        //String serverMessage;
         int len = 0;
 
         @Override
@@ -143,79 +150,62 @@ public class BackgroundService extends Service {
 
                 tcpSocket.setSoTimeout(5000);
 
-                InputStreamReader isr = new InputStreamReader(tcpSocket.getInputStream());
+                //InputStreamReader isr = new InputStreamReader(tcpSocket.getInputStream());
+                InputStream inputStream = tcpSocket.getInputStream();
                 //BufferedReader in = new BufferedReader(isr);
                 //InputStream is = tcpSocket.getInputStream();
 
                 // Declaramos las variables utilizadas para los datos, para evitar que se reasignen en cada mensaje recibido
-                int cl, gl, fps, ct, gt, cf, gf;
+                //int cl, gl, fps, ct, gt, cf, gf;
                 ByteBuffer buffer = ByteBuffer.allocate(4 * 7);
 
-                while ((len = isr.read(buf, 0, buf.length)) > 0) {
-                    //serverMessage = in.readLine();
-                    //buf[len] = 0x00;
-                    serverMessage = new String(buf, 0, len);
-                    //Log.v("TCPClient", serverMessage);
-
-
-                    if (serverMessage.startsWith(":")) {
-                        Intent intent = new Intent(MOBILE_INFO_INTENT);
-                        String[] msgs = serverMessage.trim().split("\n");
-                        for (String m : msgs) {
-                            m = m.substring(1);
-                            String[] values = m.split("=");
-                            Log.d("TCPClient", values[0] + ": " + values[1]);
-                            intent.putExtra(values[0], values[1]);
-                        }
-                        lbm.sendBroadcast(intent);
-                        //Log.i("BackgroundService", values[0] + ": " + values[1]);
-                    } else if (!serverMessage.equals("")) {
-                        receivedCount++;
-
-                        //En caso de que se junten dos mensajes, nos quedamos con el útlimo
-                        serverMessage = serverMessage.trim();
-                        serverMessage = serverMessage.substring(serverMessage.lastIndexOf('\n') + 1);
-
-                        //Log.v("TCPClient", "Message " + receivedCount + ": " + serverMessage);
-                        String[] values = serverMessage.split(";");
-                        cl = Integer.valueOf(values[0]);
-                        gl = Integer.valueOf(values[1]);
-                        fps = Integer.valueOf(values[2]);
-                        ct = Integer.valueOf(values[3]);
-                        gt= Integer.valueOf(values[4]);
-                        cf= Integer.valueOf(values[5]);
-                        gf= Integer.valueOf(values[6]);
-
-                        if (boundToWearService) {
-                            buffer.clear();
-                            buffer.putInt(cl);
-                            buffer.putInt(gl);
-                            buffer.putInt(fps);
-                            buffer.putInt(ct);
-                            buffer.putInt(gt);
-                            buffer.putInt(cf);
-                            buffer.putInt(gf);
-                            wearBinder.sendData(buffer.array());
-                        }
-
-                        Intent intent = new Intent(MOBILE_DATA_INTENT);
-                        intent.putExtra("CL", cl);
-                        intent.putExtra("GL", gl);
-                        intent.putExtra("FPS", fps);
-                        intent.putExtra("CT", ct);
-                        intent.putExtra("GT", gt);
-                        intent.putExtra("CF", cf);
-                        intent.putExtra("GF", gf);
-                        lbm.sendBroadcast(intent);
-
+                //while ((len = isr.read(buf, 0, buf.length)) > 0) {
+                while ((type = inputStream.read()) >= 0) {
+                    receivedCount++;
+                    switch (type) {
+                        // Información inicial del hardware
+                        case 0:
+                            //Log.d(TAG, "Tipo 0");
+                            /*int size = 0;
+                            size |= (inputStream.read() >> 8);
+                            size |= inputStream.read();
+                            Log.d(TAG, "Received data size: " + size);
+                            len = 0;
+                            while (len < size) {
+                                len += inputStream.read(buf, len, size - len);
+                            }
+                            Log.d(TAG, "Received bytes:\n" + Arrays.toString(buf));
+                            ByteBuffer byteBuffer = ByteBuffer.wrap(buf, 0, size);*/
+                            WearFpsProto.ComputerInfo computerInfo = WearFpsProto.ComputerInfo.parseDelimitedFrom(inputStream);
+                            //Log.d(TAG, computerInfo.toString());
+                            Intent intent = new Intent(MOBILE_INFO_INTENT);
+                            intent.putExtra("cpu", computerInfo.getCpuName());
+                            intent.putExtra("gpu", computerInfo.getGpuName());
+                            lbm.sendBroadcast(intent);
+                            break;
+                        // Datos en forma integer
+                        case 1:
+                            //Log.d(TAG, "Tipo 1");
+                            WearFpsProto.DataInt dataInt = WearFpsProto.DataInt.parseDelimitedFrom(inputStream);
+                            //Log.d(TAG, dataInt.toString());
+                            // Si estamos conectados a un wearable, creamos un buffer simple y lo enviamos
+                            if (boundToWearService) {
+                                buffer.clear();
+                                buffer.putInt(dataInt.getCpuLoad()).putInt(dataInt.getGpuLoad()).putInt(dataInt.getFps());
+                                buffer.putInt(dataInt.getCpuTemp()).putInt(dataInt.getGpuTemp()).putInt(dataInt.getCpuFreq()).putInt(dataInt.getGpuFreq());
+                                wearBinder.sendData(buffer.array());
+                            }
+                            Intent i = new Intent(MOBILE_DATA_INTENT);
+                            i.putExtra("proto", dataInt);
+                            lbm.sendBroadcast(i);
+                            break;
+                        default:
+                            Log.e(TAG, "Unsupported message format received: " + type);
+                            break;
                     }
-                    serverMessage = null;
-                    /*if (receivedCount > 5) {
-                        tcpSocket.close();
-                        Log.i("TCPClient", "Disconnected from host");
-                        break;
-                    }*/
                 }
+
+                Log.w(TAG, "Final del stream detectado");
             } catch (SocketTimeoutException e) {
                 Log.w("TCPClient", "No se ha podido conectar con el host remoto tras 3500ms");
             } catch (Exception e) {

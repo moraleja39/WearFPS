@@ -1,30 +1,20 @@
 package me.oviedo.wearfps;
 
 import android.annotation.TargetApi;
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.res.Configuration;
-import android.graphics.drawable.ColorDrawable;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.transition.Fade;
 import android.transition.Transition;
 import android.transition.TransitionInflater;
 import android.util.Log;
@@ -32,18 +22,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import java.io.InterruptedIOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -319,16 +303,17 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
                 if (intent.getAction().equals(BackgroundService.MOBILE_DATA_INTENT)) {
-                    final int CL = intent.getIntExtra("CL", 0);
+                    /*final int CL = intent.getIntExtra("CL", 0);
                     final int GL = intent.getIntExtra("GL", 0);
                     final int FPS = intent.getIntExtra("FPS", 0);
                     final int CT = intent.getIntExtra("CT", 0);
                     final int GT = intent.getIntExtra("GT", 0);
                     final int CF = intent.getIntExtra("CF", 0);
-                    final int GF = intent.getIntExtra("GF", 0);
+                    final int GF = intent.getIntExtra("GF", 0);*/
+                    final WearFpsProto.DataInt dataInt = (WearFpsProto.DataInt) intent.getSerializableExtra("proto");
 
-                    cpuLoadView.setPercentage(CL);
-                    if (GL < 0) {
+                    cpuLoadView.setPercentage(dataInt.getCpuLoad());
+                    if (dataInt.getGpuLoad() < 0) {
                         if (!isGpuOffline) {
                             isGpuOffline = true;
                             gpuLoadView.setVisibility(View.GONE);
@@ -340,15 +325,15 @@ public class MainActivity extends AppCompatActivity {
                             gpuOfflineText.setVisibility(View.GONE);
                             isGpuOffline = false;
                         }
-                        gpuLoadView.setPercentage(GL);
+                        gpuLoadView.setPercentage(dataInt.getGpuLoad());
                     }
                     //fpsText.setText(String.format("%.0f", FPS));
-                    cpuTempText.setText(String.format(sDegs, CT));
-                    if (GT < 0 ) gpuTempText.setText("---");
-                    else gpuTempText.setText(String.format(sDegs, GT));
-                    cpuFreqText.setText(String.format(sMhz, CF));
-                    if (GF < 0) gpuFreqText.setText("---");
-                    else gpuFreqText.setText(String.format(sMhz, GF));
+                    cpuTempText.setText(String.format(sDegs, dataInt.getCpuTemp()));
+                    if (dataInt.getGpuTemp() < 0 ) gpuTempText.setText("---");
+                    else gpuTempText.setText(String.format(sDegs, dataInt.getGpuTemp()));
+                    cpuFreqText.setText(String.format(sMhz, dataInt.getCpuFreq()));
+                    if (dataInt.getGpuFreq() < 0) gpuFreqText.setText("---");
+                    else gpuFreqText.setText(String.format(sMhz, dataInt.getGpuFreq()));
 
                 } else if (intent.getAction().equals(BackgroundService.MOBILE_INFO_INTENT)) {
                     if (intent.hasExtra("cpu")) {

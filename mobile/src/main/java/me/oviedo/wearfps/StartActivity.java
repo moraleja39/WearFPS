@@ -1,25 +1,20 @@
 package me.oviedo.wearfps;
 
-import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.transition.Explode;
-import android.transition.Transition;
-import android.transition.TransitionInflater;
-import android.util.Log;
 import android.support.v4.util.Pair;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -127,7 +122,8 @@ public class StartActivity extends AppCompatActivity {
 
 
     private AsyncTask<Void, Void, Void> async_cient;
-    private static final String Message = "IP_REQ";
+    //private static final String Message = "IP_REQ";
+    private static final byte[] IP_REQ_MSG = { 0x00 };
     private final int UDP_PORT = 55632;
     private String ipadd;
     DatagramSocket ds = null;
@@ -140,7 +136,7 @@ public class StartActivity extends AppCompatActivity {
                     Log.d("RequestIP", "Sending request packet...");
                     if (ds == null) ds = new DatagramSocket();
                     InetAddress addr = InetAddress.getByName("255.255.255.255");
-                    DatagramPacket dp = new DatagramPacket(Message.getBytes(), Message.length(), addr, UDP_PORT);
+                    DatagramPacket dp = new DatagramPacket(IP_REQ_MSG, IP_REQ_MSG.length, addr, UDP_PORT);
                     ds.setBroadcast(true);
                     ds.send(dp);
 
