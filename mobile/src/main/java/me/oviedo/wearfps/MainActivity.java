@@ -303,13 +303,7 @@ public class MainActivity extends AppCompatActivity {
             public void onReceive(Context context, Intent intent) {
                 //Log.d("BroadcastReceiver", "Reveived intent with action " + intent.getAction());
                 if (intent.getAction().equals(BackgroundService.MOBILE_DATA_INTENT)) {
-                    /*final int CL = intent.getIntExtra("CL", 0);
-                    final int GL = intent.getIntExtra("GL", 0);
-                    final int FPS = intent.getIntExtra("FPS", 0);
-                    final int CT = intent.getIntExtra("CT", 0);
-                    final int GT = intent.getIntExtra("GT", 0);
-                    final int CF = intent.getIntExtra("CF", 0);
-                    final int GF = intent.getIntExtra("GF", 0);*/
+
                     final WearFpsProto.DataInt dataInt = (WearFpsProto.DataInt) intent.getSerializableExtra("proto");
 
                     cpuLoadView.setPercentage(dataInt.getCpuLoad());

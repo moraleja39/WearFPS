@@ -3,6 +3,7 @@
 
 package me.oviedo.wearfps;
 
+@SuppressWarnings("all")
 public final class WearFpsProto {
   private WearFpsProto() {}
   public static void registerAllExtensions(
