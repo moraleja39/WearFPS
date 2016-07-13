@@ -192,7 +192,7 @@ public class StartActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             intent.putExtra("shouldBeTranslucent", true);
             //getWindow().setExitTransition(null);
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, Pair.create((View)fab, "fab_transition"));
+            @SuppressWarnings("unchecked") ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, Pair.create((View)fab, "fab_transition"));
             //options.update(ActivityOptionsCompat.makeSceneTransitionAnimation(this));
             ActivityCompat.startActivity(this, intent, options.toBundle());
             //overridePendingTransition(0, R.anim.nice_fade_out);

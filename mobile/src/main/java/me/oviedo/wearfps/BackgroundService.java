@@ -12,18 +12,28 @@ import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.content.LocalBroadcastManager;
+import android.transition.Explode;
 import android.util.Log;
 
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
+
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.util.Arrays;
+import java.util.Random;
 
 public class BackgroundService extends Service {
 
@@ -42,13 +52,17 @@ public class BackgroundService extends Service {
     public static boolean running = false;
 
     //private String remoteAddr = null;
-    private final int TCP_PORT = 55633;
+    private static final int PORT = 55633;
     private String serverIP = "192.168.1.10";
     private int receivedCount = 0;
 
     //private boolean isExiting = false;
 
-    private Socket tcpSocket;
+    private final Socket tcpSocket = new Socket();
+    ;
+    private DatagramChannel udpChannel;
+    DatagramSocket udpSocket;
+    private Thread udpThread;
 
     private LocalBroadcastManager lbm;
 
@@ -56,6 +70,8 @@ public class BackgroundService extends Service {
     boolean boundToWearService = false;
 
     boolean isCleanlyExiting = false;
+
+    //private final Object udpConnectLock = new Object();
 
     public BackgroundService() {
     }
@@ -100,6 +116,8 @@ public class BackgroundService extends Service {
                 getText(R.string.notification_message), pendingIntent);*/
         startForeground(FOREGROUND_NOTIFICATION_ID, notification);
 
+        udpThread = new Thread(new UDPReceiver());
+        udpThread.start();
         new Thread(new TCPClient()).start();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -129,80 +147,32 @@ public class BackgroundService extends Service {
 
     class TCPClient implements Runnable {
 
-        //char[] buf = new char[256];
-        byte[] buf = new byte[512];
-        int type;
-        //String serverMessage;
-        int len = 0;
-
         @Override
         public void run() {
 
             try {
                 Log.d("TCPClient", "Intentando conectar con el host remoto...");
-                //InetAddress remote = InetAddress.getByName(serverIP);
-                tcpSocket = new Socket();
-                SocketAddress addr = new InetSocketAddress(serverIP, TCP_PORT);
-                tcpSocket.connect(addr, 3500);
-                if (!tcpSocket.isConnected()) {
-                    throw new SocketException("No se ha podido conectar con el host remoto");
-                } else Log.d("TCPClient", "Conectado!");
+                synchronized (tcpSocket) {
+                    SocketAddress addr = new InetSocketAddress(serverIP, PORT);
+                    tcpSocket.connect(addr, 3500);
+                    if (!tcpSocket.isConnected()) {
+                        throw new SocketException("No se ha podido conectar con el host remoto");
+                    } else Log.d("TCPClient", "Conectado!");
+                    tcpSocket.notify();
+                }
 
-                tcpSocket.setSoTimeout(5000);
+                tcpSocket.setSoTimeout(0);
+                tcpSocket.setTcpNoDelay(true);
 
-                //InputStreamReader isr = new InputStreamReader(tcpSocket.getInputStream());
-                InputStream inputStream = tcpSocket.getInputStream();
-                //BufferedReader in = new BufferedReader(isr);
-                //InputStream is = tcpSocket.getInputStream();
+                Random random = new Random();
 
-                // Declaramos las variables utilizadas para los datos, para evitar que se reasignen en cada mensaje recibido
-                //int cl, gl, fps, ct, gt, cf, gf;
-                ByteBuffer buffer = ByteBuffer.allocate(4 * 7);
+                OutputStream outputStream = tcpSocket.getOutputStream();
 
                 //while ((len = isr.read(buf, 0, buf.length)) > 0) {
-                while ((type = inputStream.read()) >= 0) {
-                    receivedCount++;
-                    switch (type) {
-                        // Información inicial del hardware
-                        case 0:
-                            //Log.d(TAG, "Tipo 0");
-                            /*int size = 0;
-                            size |= (inputStream.read() >> 8);
-                            size |= inputStream.read();
-                            Log.d(TAG, "Received data size: " + size);
-                            len = 0;
-                            while (len < size) {
-                                len += inputStream.read(buf, len, size - len);
-                            }
-                            Log.d(TAG, "Received bytes:\n" + Arrays.toString(buf));
-                            ByteBuffer byteBuffer = ByteBuffer.wrap(buf, 0, size);*/
-                            WearFpsProto.ComputerInfo computerInfo = WearFpsProto.ComputerInfo.parseDelimitedFrom(inputStream);
-                            //Log.d(TAG, computerInfo.toString());
-                            Intent intent = new Intent(MOBILE_INFO_INTENT);
-                            intent.putExtra("cpu", computerInfo.getCpuName());
-                            intent.putExtra("gpu", computerInfo.getGpuName());
-                            lbm.sendBroadcast(intent);
-                            break;
-                        // Datos en forma integer
-                        case 1:
-                            //Log.d(TAG, "Tipo 1");
-                            WearFpsProto.DataInt dataInt = WearFpsProto.DataInt.parseDelimitedFrom(inputStream);
-                            //Log.d(TAG, dataInt.toString());
-                            // Si estamos conectados a un wearable, creamos un buffer simple y lo enviamos
-                            if (boundToWearService) {
-                                buffer.clear();
-                                buffer.putInt(dataInt.getCpuLoad()).putInt(dataInt.getGpuLoad()).putInt(dataInt.getFps());
-                                buffer.putInt(dataInt.getCpuTemp()).putInt(dataInt.getGpuTemp()).putInt(dataInt.getCpuFreq()).putInt(dataInt.getGpuFreq());
-                                wearBinder.sendData(buffer.array());
-                            }
-                            Intent i = new Intent(MOBILE_DATA_INTENT);
-                            i.putExtra("proto", dataInt);
-                            lbm.sendBroadcast(i);
-                            break;
-                        default:
-                            Log.e(TAG, "Unsupported message format received: " + type);
-                            break;
-                    }
+                while (running) {
+                    outputStream.write(0x00);
+                    outputStream.flush();
+                    Thread.sleep(5000 + random.nextInt(5000));
                 }
 
                 Log.w(TAG, "Final del stream detectado");
@@ -220,7 +190,105 @@ public class BackgroundService extends Service {
 
     }
 
+    class UDPReceiver implements Runnable {
+
+        ByteBuffer buffer;
+        ByteString data;
+
+        byte type;
+        int size;
+
+        @Override
+        public void run() {
+            buffer = ByteBuffer.allocate(4096);
+            ByteBuffer wearBuffer = ByteBuffer.allocate(4 * 7);
+            try {
+                udpChannel = DatagramChannel.open();
+                udpSocket = udpChannel.socket();
+                synchronized (tcpSocket) {
+                    if (!tcpSocket.isConnected()) {
+                        tcpSocket.wait();
+                    }
+                }
+                udpSocket.bind(tcpSocket.getLocalSocketAddress());
+                //udpSocket.bind(new InetSocketAddress(PORT));
+            } catch (Exception e) {
+                Log.e(TAG, "Error creating datagram socket: " + e.getMessage());
+                e.printStackTrace();
+            }
+
+            while (running) {
+                try {
+                    udpChannel.receive(buffer);
+                    buffer.flip();
+                    receivedCount++;
+
+                    //Log.d(TAG, "buffer content: " + Arrays.toString(buffer.array()));
+
+                    // Leemos el tipo
+                    type = buffer.get();
+                    // Leemos el tamaño
+                    size = 0;
+                    size |= (buffer.get() << 8);
+                    size |= buffer.get();
+
+                    data = ByteString.copyFrom(buffer);
+
+                    Log.d(TAG, "UDP packet #" + receivedCount + ": Type " + type + ", size " + size);
+
+                } catch (IOException ex) {
+                    Log.e(TAG, "Error al intentar leer el stream UDP:");
+                    ex.printStackTrace();
+                    continue;
+                }
+
+                //dataBuffer.flip();
+
+                //dataBuffer.rewind();
+
+                try {
+                    switch (type) {
+                        // Información inicial del hardware
+                        case 0:
+                            WearFpsProto.ComputerInfo computerInfo = WearFpsProto.ComputerInfo.parseFrom(data);
+                            //Log.d(TAG, computerInfo.toString());
+                            Intent intent = new Intent(MOBILE_INFO_INTENT);
+                            intent.putExtra("cpu", computerInfo.getCpuName());
+                            intent.putExtra("gpu", computerInfo.getGpuName());
+                            lbm.sendBroadcast(intent);
+                            break;
+                        // Datos en forma integer
+                        case 1:
+                            //Log.d(TAG, "Tipo 1");
+                            WearFpsProto.DataInt dataInt = WearFpsProto.DataInt.parseFrom(data);
+                            //Log.d(TAG, dataInt.toString());
+                            // Si estamos conectados a un wearable, creamos un buffer simple y lo enviamos
+                            if (boundToWearService) {
+                                wearBuffer.clear();
+                                wearBuffer.putInt(dataInt.getCpuLoad()).putInt(dataInt.getGpuLoad()).putInt(dataInt.getFps());
+                                wearBuffer.putInt(dataInt.getCpuTemp()).putInt(dataInt.getGpuTemp()).putInt(dataInt.getCpuFreq()).putInt(dataInt.getGpuFreq());
+                                wearBinder.sendData(wearBuffer.array());
+                            }
+                            Intent i = new Intent(MOBILE_DATA_INTENT);
+                            i.putExtra("proto", dataInt);
+                            lbm.sendBroadcast(i);
+                            break;
+                        default:
+                            Log.e(TAG, "Unsupported message format received: " + type);
+                            break;
+                    }
+                } catch (InvalidProtocolBufferException e) {
+                    Log.e(TAG, "Invalid protobuf data: " + e.getMessage());
+                }
+                buffer.clear();
+            }
+
+
+        }
+    }
+
     private void cleanup() {
+        running = false;
         if (boundToWearService) {
             wearBinder.finishActivity();
             unbindService(mConnection);
@@ -231,6 +299,16 @@ public class BackgroundService extends Service {
             } catch (Exception e) {
                 if (e.getMessage().equalsIgnoreCase("socket closed")) {
                     Log.i("TCPClient", "TCP socket closed");
+                } else e.printStackTrace();
+            }
+        }
+        if (!udpSocket.isClosed()) {
+            try {
+                udpSocket.close();
+                udpChannel.close();
+            } catch (Exception e) {
+                if (e.getMessage().equalsIgnoreCase("socket closed")) {
+                    Log.i(TAG, "UDP socket closed");
                 } else e.printStackTrace();
             }
         }
